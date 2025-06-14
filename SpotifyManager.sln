@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6418BCDB-2B86-49B6-A0B1-EF8866407C77}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyManager.Core", "src\SpotifyManager.Core\SpotifyManager.Core.csproj", "{E30CDF18-8873-4A64-9782-361C66A4040E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyManager.Auth", "src\SpotifyManager.Auth\SpotifyManager.Auth.csproj", "{FCBAFA89-3A22-4D63-83C0-5B36FAF7D61F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyManager.Playlist", "src\SpotifyManager.Playlist\SpotifyManager.Playlist.csproj", "{12AB08A0-A2B9-405D-AABE-77CEDA6C4CB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyManager.Theme", "src\SpotifyManager.Theme\SpotifyManager.Theme.csproj", "{6BF70B93-FF70-45D2-8803-BF2EE3A325F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyManager.Wpf", "src\SpotifyManager.Wpf\SpotifyManager.Wpf.csproj", "{D1EC13EC-838A-4F86-A999-6E092125C166}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E30CDF18-8873-4A64-9782-361C66A4040E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E30CDF18-8873-4A64-9782-361C66A4040E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E30CDF18-8873-4A64-9782-361C66A4040E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E30CDF18-8873-4A64-9782-361C66A4040E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCBAFA89-3A22-4D63-83C0-5B36FAF7D61F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCBAFA89-3A22-4D63-83C0-5B36FAF7D61F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCBAFA89-3A22-4D63-83C0-5B36FAF7D61F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCBAFA89-3A22-4D63-83C0-5B36FAF7D61F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12AB08A0-A2B9-405D-AABE-77CEDA6C4CB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12AB08A0-A2B9-405D-AABE-77CEDA6C4CB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12AB08A0-A2B9-405D-AABE-77CEDA6C4CB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12AB08A0-A2B9-405D-AABE-77CEDA6C4CB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BF70B93-FF70-45D2-8803-BF2EE3A325F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BF70B93-FF70-45D2-8803-BF2EE3A325F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BF70B93-FF70-45D2-8803-BF2EE3A325F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BF70B93-FF70-45D2-8803-BF2EE3A325F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1EC13EC-838A-4F86-A999-6E092125C166}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1EC13EC-838A-4F86-A999-6E092125C166}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1EC13EC-838A-4F86-A999-6E092125C166}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1EC13EC-838A-4F86-A999-6E092125C166}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E30CDF18-8873-4A64-9782-361C66A4040E} = {6418BCDB-2B86-49B6-A0B1-EF8866407C77}
+		{FCBAFA89-3A22-4D63-83C0-5B36FAF7D61F} = {6418BCDB-2B86-49B6-A0B1-EF8866407C77}
+		{12AB08A0-A2B9-405D-AABE-77CEDA6C4CB4} = {6418BCDB-2B86-49B6-A0B1-EF8866407C77}
+		{6BF70B93-FF70-45D2-8803-BF2EE3A325F7} = {6418BCDB-2B86-49B6-A0B1-EF8866407C77}
+		{D1EC13EC-838A-4F86-A999-6E092125C166} = {6418BCDB-2B86-49B6-A0B1-EF8866407C77}
+	EndGlobalSection
+EndGlobal
