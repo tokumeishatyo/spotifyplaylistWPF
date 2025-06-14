@@ -60,6 +60,17 @@
                          Margin="0,20,0,0"
                          Foreground="White"
                          Background="Transparent"/>
+            
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"
+                       Foreground="#FFEBEE"
+                       Background="#D32F2F"
+                       Padding="10"
+                       Margin="0,20,0,0"
+                       Width="300"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       FontSize="14"/>
         </StackPanel>
     </Grid>
 </UserControl>

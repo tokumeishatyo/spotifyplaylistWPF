@@ -29,7 +29,6 @@
                           VerticalAlignment="Center"/>
                 
                 <Button Grid.Column="1"
-                        Content="🌙"
                         Command="{Binding ToggleThemeCommand}"
                         Width="40"
                         Height="40"
@@ -38,7 +37,11 @@
                         BorderThickness="0"
                         Foreground="White"
                         FontSize="20"
-                        Cursor="Hand"/>
+                        Cursor="Hand">
+                    <Button.Content>
+                        <TextBlock Text="{Binding CurrentTheme, Converter={StaticResource ThemeToIconConverter}}"/>
+                    </Button.Content>
+                </Button>
                 
                 <Button Grid.Column="2"
                         Content="ログアウト"

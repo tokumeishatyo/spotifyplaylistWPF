@@ -14,6 +14,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _userName = "ユーザー";
 
+    [ObservableProperty]
+    private string _currentTheme = "Light";
+
     public ICommand LogoutCommand { get; }
     public ICommand ToggleThemeCommand { get; }
     
@@ -30,6 +33,39 @@ public partial class MainViewModel : ObservableObject
 
         LogoutCommand = new AsyncRelayCommand(LogoutAsync);
         ToggleThemeCommand = new AsyncRelayCommand(ToggleThemeAsync);
+        
+        _ = InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        await LoadUserInfoAsync();
+        await LoadCurrentThemeAsync();
+    }
+
+    private async Task LoadUserInfoAsync()
+    {
+        try
+        {
+            var (userId, displayName, email) = await _authService.GetUserInfoAsync();
+            UserName = displayName ?? email ?? userId ?? "ユーザー";
+        }
+        catch
+        {
+            UserName = "ユーザー";
+        }
+    }
+
+    private async Task LoadCurrentThemeAsync()
+    {
+        try
+        {
+            CurrentTheme = await _themeService.GetCurrentThemeAsync();
+        }
+        catch
+        {
+            CurrentTheme = "Light";
+        }
     }
 
     private async Task LogoutAsync()
@@ -40,8 +76,8 @@ public partial class MainViewModel : ObservableObject
 
     private async Task ToggleThemeAsync()
     {
-        var currentTheme = await _themeService.GetCurrentThemeAsync();
-        var newTheme = currentTheme == "Light" ? "Dark" : "Light";
+        var newTheme = CurrentTheme == "Light" ? "Dark" : "Light";
         await _themeService.SetThemeAsync(newTheme);
+        CurrentTheme = newTheme;
     }
 }
