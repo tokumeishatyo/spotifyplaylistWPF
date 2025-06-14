@@ -395,3 +395,11 @@ FodyWeavers.xsd
 # Application specific
 appsettings.Development.json
 appsettings.Local.json
+
+# Debug and testing files (kept locally for troubleshooting)
+*debug*.bat
+test_*.bat
+run_debug.bat
+doc/browser.png
+doc/error*.png
+doc/wait.png
