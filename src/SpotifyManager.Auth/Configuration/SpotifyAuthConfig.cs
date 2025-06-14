@@ -11,7 +11,7 @@ public static class SpotifyAuthConfig
 
     public static string ClientId => string.Concat(ClientIdParts);
     
-    public const string RedirectUri = "http://127.0.0.1:5000/callback";
+    public const string RedirectUri = "http://127.0.0.1:8888/callback";
     
     public static readonly string[] Scopes = new[]
     {

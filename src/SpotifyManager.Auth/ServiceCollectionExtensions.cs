@@ -8,7 +8,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddAuthServices(this IServiceCollection services)
     {
-        services.AddSingleton<IAuthService, AuthService>();
+        services.AddSingleton<IAuthService, SimpleAuthService>();
         return services;
     }
 }

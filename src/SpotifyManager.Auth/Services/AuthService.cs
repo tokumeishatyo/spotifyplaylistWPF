@@ -13,6 +13,12 @@ public class AuthService : IAuthService
     private EmbedIOAuthServer? _server;
     private string? _verifier;
 
+    private void LogDebug(string message)
+    {
+        Debug.WriteLine(message);
+        Console.WriteLine($"[DEBUG] {message}");
+    }
+
     public AuthService()
     {
         _credentialService = new CredentialService();
@@ -61,33 +67,36 @@ public class AuthService : IAuthService
 
     public async Task<bool> LoginAsync()
     {
+        Console.WriteLine("💫💫💫 AuthService.LoginAsync() メソッドが呼ばれました 💫💫💫");
         try
         {
-            Debug.WriteLine("認証プロセス開始");
+            LogDebug("認証プロセス開始");
+            LogDebug($"リダイレクトURI: {Configuration.SpotifyAuthConfig.RedirectUri}");
             
             var tcs = new TaskCompletionSource<bool>();
             
             // EmbedIOAuthServerを使用
-            _server = new EmbedIOAuthServer(new Uri(Configuration.SpotifyAuthConfig.RedirectUri), 5000);
+            LogDebug("EmbedIOAuthServerを作成中...");
+            _server = new EmbedIOAuthServer(new Uri("http://127.0.0.1:5000/"), 5000);
+            LogDebug("EmbedIOAuthServer作成完了");
             
-            // PKCEを使用する場合
-            (_verifier, var challenge) = PKCEUtil.GenerateCodes();
-            
-            await _server.Start();
-            Debug.WriteLine($"認証サーバー開始: {_server.BaseUri}");
-
+            // イベントハンドラーをサーバー開始前に登録
+            LogDebug("認証コードイベントハンドラー登録中...");
             _server.AuthorizationCodeReceived += async (sender, response) =>
             {
-                Debug.WriteLine($"認証コード受信: {response.Code}");
+                LogDebug($"★★★ 認証コード受信: {response.Code} ★★★");
+                LogDebug($"受信したState: {response.State}");
+                LogDebug("認証サーバー停止中...");
                 await _server.Stop();
+                LogDebug("認証サーバー停止完了");
                 
                 try
                 {
                     var tokenResponse = await new OAuthClient().RequestToken(
-                        new PKCETokenRequest(Configuration.SpotifyAuthConfig.ClientId, response.Code, _server.BaseUri, _verifier)
+                        new PKCETokenRequest(Configuration.SpotifyAuthConfig.ClientId, response.Code, _server.BaseUri, _verifier!)
                     );
 
-                    Debug.WriteLine("トークン取得成功");
+                    LogDebug("トークン取得成功");
 
                     // リフレッシュトークンを保存
                     await _credentialService.SaveCredentialAsync(
@@ -100,7 +109,7 @@ public class AuthService : IAuthService
                     
                     // ユーザー情報を取得して保存
                     var user = await _spotify.UserProfile.Current();
-                    Debug.WriteLine($"ユーザー情報取得: {user.DisplayName}");
+                    LogDebug($"ユーザー情報取得: {user.DisplayName}");
                     
                     var userInfo = new { user.Id, user.DisplayName, user.Email };
                     await _credentialService.SaveCredentialAsync(
@@ -112,20 +121,40 @@ public class AuthService : IAuthService
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"認証エラー詳細: {ex}");
+                    LogDebug($"認証エラー詳細: {ex}");
                     tcs.SetResult(false);
                 }
             };
 
+            LogDebug("エラーイベントハンドラー登録中...");
             _server.ErrorReceived += async (sender, error, errorUri) =>
             {
-                Debug.WriteLine($"認証エラー: {error}");
-                Debug.WriteLine($"エラーURI: {errorUri}");
+                LogDebug($"★★★ 認証エラー: {error} ★★★");
+                LogDebug($"★★★ エラーURI: {errorUri} ★★★");
                 await _server.Stop();
                 tcs.TrySetResult(false);
             };
+            LogDebug("イベントハンドラー登録完了");
             
-            var request = new LoginRequest(_server.BaseUri, Configuration.SpotifyAuthConfig.ClientId, LoginRequest.ResponseType.Code)
+            // PKCEを使用する場合
+            LogDebug("PKCE コード生成中...");
+            (_verifier, var challenge) = PKCEUtil.GenerateCodes();
+            LogDebug($"PKCE コード生成完了: verifier長={_verifier?.Length}, challenge長={challenge?.Length}");
+            
+            LogDebug("認証サーバー開始中...");
+            await _server.Start();
+            LogDebug($"認証サーバー開始完了: {_server.BaseUri}");
+            LogDebug($"サーバーポート: {_server.Port}");
+            LogDebug($"サーバー実際のURI: {_server.BaseUri}");
+            
+            // HTTPリクエスト受信の監視を追加
+            LogDebug("HTTPリクエスト監視を開始しています...");
+            
+            // EmbedIOAuthServerが自動的に作成するコールバックURLを使用
+            var callbackUri = new Uri(_server.BaseUri, "callback");
+            LogDebug($"実際のコールバックURI: {callbackUri}");
+            
+            var request = new LoginRequest(callbackUri, Configuration.SpotifyAuthConfig.ClientId, LoginRequest.ResponseType.Code)
             {
                 CodeChallengeMethod = "S256",
                 CodeChallenge = challenge,
@@ -133,15 +162,31 @@ public class AuthService : IAuthService
             };
 
             var uri = request.ToUri();
-            Debug.WriteLine($"認証URL: {uri}");
+            LogDebug($"認証URL: {uri}");
             
+            LogDebug("ブラウザを開いています...");
             BrowserUtil.Open(uri);
+            LogDebug("ブラウザを開きました");
 
-            return await tcs.Task;
+            LogDebug("コールバック待機中...");
+            
+            // 60秒のタイムアウトを追加
+            var timeoutTask = Task.Delay(60000);
+            var completedTask = await Task.WhenAny(tcs.Task, timeoutTask);
+            
+            if (completedTask == timeoutTask)
+            {
+                LogDebug("★★★ コールバックタイムアウト (60秒) ★★★");
+                return false;
+            }
+            
+            var result = await tcs.Task;
+            LogDebug($"コールバック完了: {result}");
+            return result;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"ログインエラー: {ex}");
+            LogDebug($"ログインエラー: {ex}");
             return false;
         }
         finally
@@ -167,7 +212,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"ログアウトエラー: {ex.Message}");
+            LogDebug($"ログアウトエラー: {ex.Message}");
         }
     }
 
