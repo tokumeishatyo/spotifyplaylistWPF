@@ -1,3 +1,4 @@
+using SpotifyAPI.Web;
 using SpotifyManager.Core.Interfaces;
 using System.Diagnostics;
 using System.Net;
@@ -16,6 +17,7 @@ public class SimpleAuthService : IAuthService
     private string? _accessToken;
     private string? _codeVerifier;
     private string? _codeChallenge;
+    private SpotifyClient? _spotify;
 
     public SimpleAuthService()
     {
@@ -48,11 +50,61 @@ public class SimpleAuthService : IAuthService
         try
         {
             var refreshToken = await _credentialService.GetCredentialAsync(Configuration.SpotifyAuthConfig.CredentialTargetName);
-            return !string.IsNullOrEmpty(refreshToken);
+            if (string.IsNullOrEmpty(refreshToken))
+                return false;
+
+            // リフレッシュトークンで新しいアクセストークンを取得してSpotifyClientを初期化
+            if (_spotify == null)
+            {
+                Console.WriteLine("[Auth] 既存のリフレッシュトークンでSpotifyClient初期化中...");
+                var tokenResponse = await RefreshAccessTokenAsync(refreshToken);
+                if (!string.IsNullOrEmpty(tokenResponse))
+                {
+                    _accessToken = tokenResponse;
+                    _spotify = new SpotifyClient(_accessToken);
+                    Console.WriteLine("[Auth] SpotifyClient初期化完了");
+                    return true;
+                }
+                return false;
+            }
+            
+            return true;
         }
         catch
         {
             return false;
+        }
+    }
+
+    private async Task<string?> RefreshAccessTokenAsync(string refreshToken)
+    {
+        try
+        {
+            using var client = new HttpClient();
+            
+            var tokenRequest = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                new KeyValuePair<string, string>("refresh_token", refreshToken),
+                new KeyValuePair<string, string>("client_id", Configuration.SpotifyAuthConfig.ClientId)
+            });
+
+            var response = await client.PostAsync("https://accounts.spotify.com/api/token", tokenRequest);
+            var content = await response.Content.ReadAsStringAsync();
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var tokenData = JsonSerializer.Deserialize<JsonElement>(content);
+                return tokenData.GetProperty("access_token").GetString();
+            }
+            
+            Console.WriteLine($"[Auth] リフレッシュトークンエラー: {content}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Auth] リフレッシュトークン例外: {ex.Message}");
+            return null;
         }
     }
 
@@ -287,6 +339,9 @@ public class SimpleAuthService : IAuthService
                     );
                     
                     // ユーザー情報を取得
+                    // SpotifyClientを初期化
+                    _spotify = new SpotifyClient(_accessToken!);
+                    
                     Console.WriteLine("[GetToken] ユーザー情報取得開始...");
                     await GetUserInfoAsync(_accessToken!);
                     Console.WriteLine("[GetToken] ユーザー情報取得完了");
@@ -378,5 +433,10 @@ public class SimpleAuthService : IAuthService
         {
             return (null, null, null);
         }
+    }
+
+    public object? GetSpotifyClient()
+    {
+        return _spotify;
     }
 }

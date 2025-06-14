@@ -7,5 +7,6 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <converters:ThemeToIconConverter x:Key="ThemeToIconConverter"/>
+        <converters:BooleanToExpandIconConverter x:Key="BooleanToExpandIconConverter"/>
     </Application.Resources>
 </Application>

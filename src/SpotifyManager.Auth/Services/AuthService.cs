@@ -238,7 +238,7 @@ public class AuthService : IAuthService
         }
     }
 
-    public SpotifyClient? GetSpotifyClient()
+    public object? GetSpotifyClient()
     {
         return _spotify;
     }

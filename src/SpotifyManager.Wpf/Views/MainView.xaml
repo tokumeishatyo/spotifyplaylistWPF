@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SpotifyManager.Wpf.Views"
+             xmlns:behaviors="clr-namespace:SpotifyManager.Wpf.Behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="900">
     <Grid>
@@ -57,11 +58,189 @@
         
         <!-- Content Area -->
         <Grid Grid.Row="1" Background="#F5F5F5">
-            <TextBlock Text="プレイリスト一覧"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      FontSize="24"
-                      Foreground="#666666"/>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Loading Indicator -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" 
+                       HorizontalAlignment="Center" Margin="10"
+                       Visibility="{Binding IsLoadingPlaylists, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="プレイリストを読み込み中..." 
+                          FontSize="14" Foreground="#666666" 
+                          VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <ProgressBar IsIndeterminate="True" Width="100" Height="4"/>
+            </StackPanel>
+            
+            <!-- Playlists TreeView with Virtualization -->
+            <ScrollViewer Grid.Row="1" 
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Disabled"
+                         CanContentScroll="True"
+                         PanningMode="VerticalOnly">
+                <TreeView ItemsSource="{Binding Playlists}"
+                         VirtualizingPanel.IsVirtualizing="True"
+                         VirtualizingPanel.VirtualizationMode="Recycling"
+                         VirtualizingPanel.ScrollUnit="Item"
+                         ScrollViewer.CanContentScroll="True"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         behaviors:ScrollViewerBehavior.EnableMouseWheel="True">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                            <Setter Property="Padding" Value="5"/>
+                            <Setter Property="Margin" Value="2"/>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Tracks}">
+                            <!-- Playlist Header -->
+                            <StackPanel Orientation="Horizontal" Margin="5">
+                                <Button Command="{Binding ToggleExpandCommand}"
+                                       Background="Transparent" 
+                                       BorderThickness="0"
+                                       Padding="5"
+                                       Cursor="Hand">
+                                    <TextBlock Text="{Binding IsExpanded, Converter={StaticResource BooleanToExpandIconConverter}}"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="12"/>
+                                </Button>
+                                
+                                <!-- Playlist Image -->
+                                <Border Width="40" Height="40" 
+                                       CornerRadius="4" 
+                                       Margin="0,0,10,0"
+                                       Background="#E0E0E0">
+                                    <Grid>
+                                        <Image Source="{Binding PlaylistInfo.ImageUrl}"
+                                              Stretch="UniformToFill"
+                                              RenderOptions.BitmapScalingMode="HighQuality">
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="Source" Value="{x:Null}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                        <!-- Fallback icon when no image -->
+                                        <TextBlock Text="🎵" 
+                                                  FontSize="20"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Foreground="#999">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding PlaylistInfo.ImageUrl}" Value="{x:Null}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding PlaylistInfo.ImageUrl}" Value="">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                                
+                                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding PlaylistInfo.Name}" 
+                                              FontWeight="Bold" 
+                                              FontSize="14"/>
+                                    <TextBlock Text="{Binding PlaylistInfo.TrackCount, StringFormat={}{0} tracks}" 
+                                              FontSize="10" 
+                                              Foreground="Gray"/>
+                                </StackPanel>
+                                
+                                <!-- Loading indicator for tracks -->
+                                <ProgressBar IsIndeterminate="True" 
+                                           Width="50" Height="2" 
+                                           Margin="10,0,0,0"
+                                           VerticalAlignment="Center"
+                                           Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            </StackPanel>
+                            
+                            <!-- Track Template -->
+                            <HierarchicalDataTemplate.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="20,2,5,2">
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                 Margin="0,0,10,0"
+                                                 VerticalAlignment="Center"/>
+                                        
+                                        <!-- Track Album Image -->
+                                        <Border Width="20" Height="20" 
+                                               CornerRadius="2" 
+                                               Margin="0,0,8,0"
+                                               Background="#F0F0F0"
+                                               VerticalAlignment="Center">
+                                            <Grid>
+                                                <Image Source="{Binding TrackInfo.AlbumImageUrl}"
+                                                      Stretch="UniformToFill"
+                                                      RenderOptions.BitmapScalingMode="HighQuality">
+                                                    <Image.Style>
+                                                        <Style TargetType="Image">
+                                                            <Style.Triggers>
+                                                                <Trigger Property="Source" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Image.Style>
+                                                </Image>
+                                                <!-- Fallback icon when no image -->
+                                                <TextBlock Text="♪" 
+                                                          FontSize="10"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          Foreground="#AAA">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding TrackInfo.AlbumImageUrl}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding TrackInfo.AlbumImageUrl}" Value="">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Border>
+                                        
+                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" MinWidth="200">
+                                            <TextBlock Text="{Binding TrackInfo.Name}" 
+                                                      FontWeight="SemiBold"
+                                                      FontSize="12"
+                                                      TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Artists}"
+                                                      FontSize="10"
+                                                      Foreground="Gray"
+                                                      TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                        
+                                        <TextBlock Text="{Binding DurationString}"
+                                                  FontSize="10"
+                                                  Foreground="Gray"
+                                                  Margin="10,0,0,0"
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </HierarchicalDataTemplate.ItemTemplate>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </ScrollViewer>
         </Grid>
         
         <!-- Footer -->
