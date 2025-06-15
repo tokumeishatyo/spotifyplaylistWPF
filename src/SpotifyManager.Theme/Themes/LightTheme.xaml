@@ -1,0 +1,32 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Light Theme Colors -->
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="#1DB954"/>
+    <SolidColorBrush x:Key="FooterBackgroundBrush" Color="#E0E0E0"/>
+    
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#666666"/>
+    <SolidColorBrush x:Key="HeaderTextBrush" Color="#FFFFFF"/>
+    
+    <SolidColorBrush x:Key="BorderBrush" Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="HoverBrush" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="SelectedBrush" Color="#E3F2FD"/>
+    
+    <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ButtonHoverBrush" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="ButtonTextBrush" Color="#1DB954"/>
+    
+    <SolidColorBrush x:Key="DeleteButtonBrush" Color="#FF5252"/>
+    <SolidColorBrush x:Key="DeleteButtonHoverBrush" Color="#E53935"/>
+    
+    <!-- Checkbox and Image Backgrounds -->
+    <SolidColorBrush x:Key="PlaylistImageBackgroundBrush" Color="#E0E0E0"/>
+    <SolidColorBrush x:Key="TrackImageBackgroundBrush" Color="#F0F0F0"/>
+    
+    <!-- Icon and Fallback Colors -->
+    <SolidColorBrush x:Key="PlaylistIconBrush" Color="#999999"/>
+    <SolidColorBrush x:Key="TrackIconBrush" Color="#AAAAAA"/>
+</ResourceDictionary>

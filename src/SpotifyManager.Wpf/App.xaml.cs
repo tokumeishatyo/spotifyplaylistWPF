@@ -49,6 +49,10 @@ public partial class App : Application
 
         await _host.StartAsync();
 
+        // 初期テーマを適用
+        var themeService = _host.Services.GetRequiredService<IThemeService>();
+        themeService.ApplyInitialTheme();
+
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
 
