@@ -682,7 +682,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private void AddToExistingPlaylist()
+    private async void AddToExistingPlaylist()
     {
         try
         {
@@ -697,16 +697,82 @@ public partial class MainViewModel : ObservableObject
                 selectedTracks.AddRange(playlist.Tracks.Where(t => t.IsSelected).Select(t => t.TrackInfo));
             }
             
-            Console.WriteLine($"[MainViewModel] 既存プレイリストに{selectedTracks.Count}件の楽曲を追加（未実装）");
+            if (selectedTracks.Count == 0)
+            {
+                System.Windows.MessageBox.Show(
+                    "楽曲が選択されていません。",
+                    "情報",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+                return;
+            }
             
-            // TODO: プレイリスト選択ダイアログを表示
-            // TODO: 選択されたプレイリストに楽曲追加を実行
+            Console.WriteLine($"[MainViewModel] 既存プレイリストに{selectedTracks.Count}件の楽曲を追加");
             
-            System.Windows.MessageBox.Show(
-                $"{selectedTracks.Count}件の楽曲を既存プレイリストに追加する機能は次回実装予定です。",
-                "機能準備中",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Information);
+            // プレイリスト選択ダイアログを表示
+            var dialog = new SpotifyManager.Wpf.Views.SelectPlaylistDialog(Playlists, selectedTracks.Count);
+            var result = dialog.ShowDialog();
+            
+            if (result != true || !dialog.SelectedPlaylists.Any())
+            {
+                Console.WriteLine("[MainViewModel] プレイリスト選択がキャンセルされました");
+                return;
+            }
+            
+            var selectedPlaylists = dialog.SelectedPlaylists.ToList();
+            var trackUris = selectedTracks.Select(t => t.Uri).ToList();
+            var successCount = 0;
+            var errorMessages = new List<string>();
+            
+            // 選択された各プレイリストに楽曲を追加
+            foreach (var playlist in selectedPlaylists)
+            {
+                try
+                {
+                    await _playlistService.AddTracksToPlaylistAsync(playlist.PlaylistInfo.Id, trackUris);
+                    
+                    // トラック数を更新
+                    playlist.PlaylistInfo.TrackCount += selectedTracks.Count;
+                    playlist.OnPropertyChanged(nameof(playlist.PlaylistInfo));
+                    
+                    successCount++;
+                    Console.WriteLine($"[MainViewModel] プレイリスト「{playlist.PlaylistInfo.Name}」に{selectedTracks.Count}件を追加完了");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[MainViewModel] プレイリスト「{playlist.PlaylistInfo.Name}」への追加エラー: {ex.Message}");
+                    errorMessages.Add($"「{playlist.PlaylistInfo.Name}」: {ex.Message}");
+                }
+            }
+            
+            // 選択をクリア
+            ClearAllSelections();
+            
+            // 結果を表示
+            if (successCount == selectedPlaylists.Count)
+            {
+                System.Windows.MessageBox.Show(
+                    $"{selectedTracks.Count}件の楽曲を{successCount}個のプレイリストに追加しました。",
+                    "完了",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+            }
+            else
+            {
+                var message = $"{selectedTracks.Count}件の楽曲を{successCount}/{selectedPlaylists.Count}個のプレイリストに追加しました。";
+                if (errorMessages.Any())
+                {
+                    message += $"\n\nエラーが発生したプレイリスト:\n{string.Join("\n", errorMessages)}";
+                }
+                
+                System.Windows.MessageBox.Show(
+                    message,
+                    "部分的に完了",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
+            }
+            
+            Console.WriteLine($"[MainViewModel] 既存プレイリスト追加完了: {successCount}/{selectedPlaylists.Count}");
         }
         catch (Exception ex)
         {
