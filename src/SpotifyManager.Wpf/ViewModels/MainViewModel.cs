@@ -13,6 +13,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IAuthService _authService;
     private readonly IPlaylistService _playlistService;
     private readonly IThemeService _themeService;
+    private readonly ISearchService _searchService;
 
     [ObservableProperty]
     private string _userName = "ユーザー";
@@ -26,30 +27,75 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasSelectedItems;
 
+    // Search related properties
+    [ObservableProperty]
+    private bool _isSearchPanelExpanded;
+
+    [ObservableProperty]
+    private bool _isKeywordSearchMode = true;
+
+    [ObservableProperty]
+    private bool _isOmakaseSearchMode;
+
+    [ObservableProperty]
+    private string _searchTrackName = string.Empty;
+
+    [ObservableProperty]
+    private string _searchArtistName = string.Empty;
+
+    [ObservableProperty]
+    private string _searchAlbumName = string.Empty;
+
+    [ObservableProperty]
+    private string _selectedMood = string.Empty;
+
+    [ObservableProperty]
+    private int _maxResults = 20;
+
+    [ObservableProperty]
+    private string _searchButtonText = "検索";
+
+    [ObservableProperty]
+    private bool _hasSearchResults;
+
+    [ObservableProperty]
+    private string _searchResultsText = string.Empty;
+
     public ObservableCollection<PlaylistViewModel> Playlists { get; } = new();
+    public ObservableCollection<SearchResultViewModel> SearchResults { get; } = new();
+    public ObservableCollection<string> AvailableMoods { get; } = new();
 
     public ICommand LogoutCommand { get; }
     public ICommand ToggleThemeCommand { get; }
     public ICommand LoadPlaylistsCommand { get; }
     public ICommand DeleteSelectedCommand { get; }
+    public ICommand SearchCommand { get; }
+    public ICommand ClearSearchCommand { get; }
     
     public event EventHandler? LogoutRequested;
 
     public MainViewModel(
         IAuthService authService,
         IPlaylistService playlistService,
-        IThemeService themeService)
+        IThemeService themeService,
+        ISearchService searchService)
     {
         _authService = authService;
         _playlistService = playlistService;
         _themeService = themeService;
+        _searchService = searchService;
 
         LogoutCommand = new AsyncRelayCommand(LogoutAsync);
         ToggleThemeCommand = new AsyncRelayCommand(ToggleThemeAsync);
         LoadPlaylistsCommand = new AsyncRelayCommand(LoadPlaylistsAsync);
         DeleteSelectedCommand = new AsyncRelayCommand(DeleteSelectedItemsAsync, CanDeleteSelectedItems);
+        SearchCommand = new AsyncRelayCommand(SearchAsync, CanSearch);
+        ClearSearchCommand = new RelayCommand(ClearSearch);
         
         Playlists.CollectionChanged += OnPlaylistsCollectionChanged;
+        
+        // プロパティ変更の監視
+        PropertyChanged += OnPropertyChanged;
         
         _ = InitializeAsync();
     }
@@ -59,6 +105,7 @@ public partial class MainViewModel : ObservableObject
         await LoadUserInfoAsync();
         await LoadCurrentThemeAsync();
         await LoadPlaylistsAsync();
+        await InitializeSearchAsync();
     }
 
     private async Task LoadUserInfoAsync()
@@ -259,5 +306,130 @@ public partial class MainViewModel : ObservableObject
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Error);
         }
+    }
+
+    // Search related methods
+    private async Task InitializeSearchAsync()
+    {
+        try
+        {
+            Console.WriteLine("[MainViewModel] 検索初期化開始");
+            
+            // 検索サービスのキャッシュ初期化
+            await _searchService.InitializeCacheAsync();
+            
+            // 気分の選択肢を読み込み
+            var moods = _searchService.GetAvailableMoods();
+            foreach (var mood in moods)
+            {
+                AvailableMoods.Add(mood);
+            }
+            
+            Console.WriteLine($"[MainViewModel] 検索初期化完了: {AvailableMoods.Count}種類の気分");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainViewModel] 検索初期化エラー: {ex.Message}");
+        }
+    }
+
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(IsKeywordSearchMode):
+                if (IsKeywordSearchMode)
+                    IsOmakaseSearchMode = false;
+                UpdateSearchCommandCanExecute();
+                break;
+            case nameof(IsOmakaseSearchMode):
+                if (IsOmakaseSearchMode)
+                    IsKeywordSearchMode = false;
+                UpdateSearchCommandCanExecute();
+                break;
+            case nameof(SearchTrackName):
+            case nameof(SearchArtistName):
+            case nameof(SearchAlbumName):
+            case nameof(SelectedMood):
+                UpdateSearchCommandCanExecute();
+                break;
+        }
+    }
+
+    private void UpdateSearchCommandCanExecute()
+    {
+        ((AsyncRelayCommand)SearchCommand).NotifyCanExecuteChanged();
+    }
+
+    private bool CanSearch()
+    {
+        if (IsKeywordSearchMode)
+        {
+            return !string.IsNullOrWhiteSpace(SearchTrackName) ||
+                   !string.IsNullOrWhiteSpace(SearchArtistName) ||
+                   !string.IsNullOrWhiteSpace(SearchAlbumName);
+        }
+        else
+        {
+            return !string.IsNullOrWhiteSpace(SelectedMood);
+        }
+    }
+
+    private async Task SearchAsync()
+    {
+        try
+        {
+            SearchButtonText = "検索中...";
+            Console.WriteLine("[MainViewModel] 検索開始");
+
+            var request = new SearchRequest
+            {
+                Mode = IsKeywordSearchMode ? SearchMode.Keyword : SearchMode.Omakase,
+                TrackName = SearchTrackName,
+                ArtistName = SearchArtistName,
+                AlbumName = SearchAlbumName,
+                Mood = SelectedMood,
+                MaxResults = MaxResults
+            };
+
+            var results = await _searchService.SearchAsync(request);
+            
+            SearchResults.Clear();
+            foreach (var result in results)
+            {
+                SearchResults.Add(new SearchResultViewModel(result));
+            }
+
+            HasSearchResults = SearchResults.Any();
+            SearchResultsText = SearchResults.Any() 
+                ? $"検索結果: {SearchResults.Count}件"
+                : "該当する楽曲が見つかりませんでした。";
+
+            Console.WriteLine($"[MainViewModel] 検索完了: {SearchResults.Count}件");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainViewModel] 検索エラー: {ex.Message}");
+            SearchResults.Clear();
+            HasSearchResults = false;
+            SearchResultsText = "検索中にエラーが発生しました。";
+        }
+        finally
+        {
+            SearchButtonText = "検索";
+        }
+    }
+
+    private void ClearSearch()
+    {
+        SearchTrackName = string.Empty;
+        SearchArtistName = string.Empty;
+        SearchAlbumName = string.Empty;
+        SelectedMood = string.Empty;
+        SearchResults.Clear();
+        HasSearchResults = false;
+        SearchResultsText = string.Empty;
+        
+        Console.WriteLine("[MainViewModel] 検索条件クリア");
     }
 }

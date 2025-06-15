@@ -1,14 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SpotifyAPI.Web;
 using SpotifyManager.Core.Interfaces;
-using SpotifyManager.Core.Models;
 
 namespace SpotifyManager.Search.Services;
 
-public class SearchService : Core.Interfaces.ISearchService
+public class SearchService : ISearchService
 {
-    private readonly ISpotifyApi _spotifyApi;
     private readonly IPlaylistService _playlistService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<SearchService> _logger;
@@ -17,12 +14,10 @@ public class SearchService : Core.Interfaces.ISearchService
     private Dictionary<string, List<string>> _moodMappings = new();
 
     public SearchService(
-        ISpotifyApi spotifyApi,
         IPlaylistService playlistService,
         IConfiguration configuration,
         ILogger<SearchService> logger)
     {
-        _spotifyApi = spotifyApi;
         _playlistService = playlistService;
         _configuration = configuration;
         _logger = logger;
@@ -61,13 +56,13 @@ public class SearchService : Core.Interfaces.ISearchService
         }
     }
 
-    public async Task<IEnumerable<SearchResult>> SearchAsync(SearchRequest request)
+    public async Task<IEnumerable<SearchResult>> SearchAsync(Core.Interfaces.SearchRequest request)
     {
         try
         {
             _logger.LogInformation($"[SearchService] 検索開始: Mode={request.Mode}, MaxResults={request.MaxResults}");
             
-            if (request.Mode == SearchMode.Keyword)
+            if (request.Mode == Core.Interfaces.SearchMode.Keyword)
             {
                 return await SearchByKeywordAsync(request);
             }
@@ -88,7 +83,7 @@ public class SearchService : Core.Interfaces.ISearchService
         return _moodMappings.Keys;
     }
 
-    private async Task<IEnumerable<SearchResult>> SearchByKeywordAsync(SearchRequest request)
+    private async Task<IEnumerable<SearchResult>> SearchByKeywordAsync(Core.Interfaces.SearchRequest request)
     {
         var results = _cachedTracks.AsEnumerable();
         
@@ -110,11 +105,11 @@ public class SearchService : Core.Interfaces.ISearchService
         return results.Take(request.MaxResults);
     }
 
-    private async Task<IEnumerable<SearchResult>> SearchByMoodAsync(SearchRequest request)
+    private async Task<IEnumerable<SearchResult>> SearchByMoodAsync(Core.Interfaces.SearchRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Mood) || !_moodMappings.ContainsKey(request.Mood))
         {
-            return Enumerable.Empty<Core.Interfaces.SearchResult>();
+            return Enumerable.Empty<SearchResult>();
         }
         
         var keywords = _moodMappings[request.Mood];
