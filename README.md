@@ -32,6 +32,13 @@ Spotify プレイリスト管理アプリケーション（WPF）
 - TreeView閉じた状態でのチェック状態保持
 - ユーザビリティを考慮した2状態クリック動作
 
+**PBI-05: アイテム削除機能**
+- 確認ダイアログによる安全な削除操作
+- プレイリスト全体削除 vs 楽曲個別削除の分岐ロジック
+- 削除後のリアルタイムUI更新（トラック数・楽曲リスト）
+- エラーハンドリングとユーザーフレンドリーなメッセージ
+- 削除操作の不可逆性の明示
+
 **基本アーキテクチャ**
 - DLL分割アーキテクチャ（Core, Auth, Playlist, Theme, Wpf）
 - MVVM パターン実装
@@ -102,7 +109,7 @@ dotnet run --project src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj
 
 - Spotify Premium アカウントが必要
 - 初回起動時にSpotify認証が必要
-- 削除機能（選択したアイテムの削除）は次の段階で実装予定
+- 削除機能（選択したアイテムの削除）実装済み
 - Client ID はBase64エンコードによる軽微な難読化を実装済み
 
 ### 🔧 開発コマンド
@@ -129,8 +136,10 @@ dotnet publish src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj -c Release -o pu
 
 ### 📦 次期実装予定機能
 
-- **PBI-05:** プレイリスト・楽曲削除機能（選択したアイテムの削除実行）
 - **PBI-06:** ダーク/ライトテーマ切り替え機能
+- **PBI-07:** 楽曲検索機能
+- **PBI-08:** 重複楽曲検出・削除
+- **PBI-09:** 設定画面
 
 ### 🔒 セキュリティ対策
 
