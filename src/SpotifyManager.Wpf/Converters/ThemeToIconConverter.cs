@@ -9,9 +9,9 @@ public class ThemeToIconConverter : IValueConverter
     {
         if (value is string theme)
         {
-            return theme == "Light" ? "🌙" : "☀️";
+            return theme == "Light" ? "☀️" : "🌙";
         }
-        return "🌙";
+        return "☀️";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

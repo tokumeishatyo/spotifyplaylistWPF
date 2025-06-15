@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
         
         <!-- Header -->
-        <Border Grid.Row="0" Background="#1DB954" Padding="10">
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBackgroundBrush}" Padding="10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -25,7 +25,7 @@
                 
                 <TextBlock Grid.Column="0" 
                           Text="{Binding UserName, StringFormat='Welcome, {0}!'}"
-                          Foreground="White"
+                          Foreground="{DynamicResource HeaderTextBrush}"
                           FontSize="16"
                           VerticalAlignment="Center"/>
                 
@@ -36,7 +36,7 @@
                         Margin="5"
                         Background="Transparent"
                         BorderThickness="0"
-                        Foreground="White"
+                        Foreground="{DynamicResource HeaderTextBrush}"
                         FontSize="20"
                         Cursor="Hand">
                     <Button.Content>
@@ -49,15 +49,15 @@
                         Command="{Binding LogoutCommand}"
                         Padding="10,5"
                         Margin="5"
-                        Background="White"
-                        Foreground="#1DB954"
+                        Background="{DynamicResource ButtonBackgroundBrush}"
+                        Foreground="{DynamicResource ButtonTextBrush}"
                         BorderThickness="0"
                         Cursor="Hand"/>
             </Grid>
         </Border>
         
         <!-- Content Area -->
-        <Grid Grid.Row="1" Background="#F5F5F5">
+        <Grid Grid.Row="1" Background="{DynamicResource SecondaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -68,7 +68,7 @@
                        HorizontalAlignment="Center" Margin="10"
                        Visibility="{Binding IsLoadingPlaylists, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <TextBlock Text="プレイリストを読み込み中..." 
-                          FontSize="14" Foreground="#666666" 
+                          FontSize="14" Foreground="{DynamicResource SecondaryTextBrush}" 
                           VerticalAlignment="Center" Margin="0,0,10,0"/>
                 <ProgressBar IsIndeterminate="True" Width="100" Height="4"/>
             </StackPanel>
@@ -85,12 +85,16 @@
                          VirtualizingPanel.ScrollUnit="Item"
                          ScrollViewer.CanContentScroll="True"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
-                         behaviors:ScrollViewerBehavior.EnableMouseWheel="True">
+                         behaviors:ScrollViewerBehavior.EnableMouseWheel="True"
+                         Background="{DynamicResource PrimaryBackgroundBrush}"
+                         BorderThickness="0">
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="TreeViewItem">
                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                             <Setter Property="Padding" Value="5"/>
                             <Setter Property="Margin" Value="2"/>
+                            <Setter Property="Background" Value="{DynamicResource PrimaryBackgroundBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
                         </Style>
                     </TreeView.ItemContainerStyle>
                     
@@ -119,7 +123,7 @@
                                 <Border Width="40" Height="40" 
                                        CornerRadius="4" 
                                        Margin="0,0,10,0"
-                                       Background="#E0E0E0">
+                                       Background="{DynamicResource PlaylistImageBackgroundBrush}">
                                     <Grid>
                                         <Image Source="{Binding PlaylistInfo.ImageUrl}"
                                               Stretch="UniformToFill"
@@ -139,7 +143,7 @@
                                                   FontSize="20"
                                                   HorizontalAlignment="Center"
                                                   VerticalAlignment="Center"
-                                                  Foreground="#999">
+                                                  Foreground="{DynamicResource PlaylistIconBrush}">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -160,10 +164,11 @@
                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding PlaylistInfo.Name}" 
                                               FontWeight="Bold" 
-                                              FontSize="14"/>
+                                              FontSize="14"
+                                              Foreground="{DynamicResource PrimaryTextBrush}"/>
                                     <TextBlock Text="{Binding PlaylistInfo.TrackCount, StringFormat={}{0} tracks}" 
                                               FontSize="10" 
-                                              Foreground="Gray"/>
+                                              Foreground="{DynamicResource SecondaryTextBrush}"/>
                                 </StackPanel>
                                 
                                 <!-- Loading indicator for tracks -->
@@ -187,7 +192,7 @@
                                         <Border Width="20" Height="20" 
                                                CornerRadius="2" 
                                                Margin="0,0,8,0"
-                                               Background="#F0F0F0"
+                                               Background="{DynamicResource TrackImageBackgroundBrush}"
                                                VerticalAlignment="Center">
                                             <Grid>
                                                 <Image Source="{Binding TrackInfo.AlbumImageUrl}"
@@ -208,7 +213,7 @@
                                                           FontSize="10"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center"
-                                                          Foreground="#AAA">
+                                                          Foreground="{DynamicResource TrackIconBrush}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -230,16 +235,17 @@
                                             <TextBlock Text="{Binding TrackInfo.Name}" 
                                                       FontWeight="SemiBold"
                                                       FontSize="12"
+                                                      Foreground="{DynamicResource PrimaryTextBrush}"
                                                       TextTrimming="CharacterEllipsis"/>
                                             <TextBlock Text="{Binding Artists}"
                                                       FontSize="10"
-                                                      Foreground="Gray"
+                                                      Foreground="{DynamicResource SecondaryTextBrush}"
                                                       TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
                                         
                                         <TextBlock Text="{Binding DurationString}"
                                                   FontSize="10"
-                                                  Foreground="Gray"
+                                                  Foreground="{DynamicResource SecondaryTextBrush}"
                                                   Margin="10,0,0,0"
                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
@@ -252,16 +258,17 @@
         </Grid>
         
         <!-- Footer -->
-        <Border Grid.Row="2" Background="#E0E0E0" Padding="10">
+        <Border Grid.Row="2" Background="{DynamicResource FooterBackgroundBrush}" Padding="10">
             <Button Content="Delete"
                     Command="{Binding DeleteSelectedCommand}"
                     HorizontalAlignment="Center"
                     Padding="20,10"
-                    Background="#FF5252"
-                    Foreground="White"
+                    Background="{DynamicResource DeleteButtonBrush}"
+                    Foreground="{DynamicResource HeaderTextBrush}"
                     BorderThickness="0"
                     FontSize="16"
-                    Cursor="Hand"/>
+                    Cursor="Hand"
+                    Visibility="{Binding HasSelectedItems, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         </Border>
     </Grid>
 </UserControl>
