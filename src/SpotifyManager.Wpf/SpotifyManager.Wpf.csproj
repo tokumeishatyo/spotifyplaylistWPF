@@ -15,8 +15,9 @@
   
   <!-- Release Configuration -->
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DebugType>portable</DebugType>
-    <DebugSymbols>true</DebugSymbols>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

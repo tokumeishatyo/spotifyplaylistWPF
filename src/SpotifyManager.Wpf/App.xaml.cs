@@ -69,8 +69,8 @@ public partial class App : Application
     private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {
         MessageBox.Show(
-            $"An unhandled exception occurred:\n\n{e.Exception.Message}\n\nStack Trace:\n{e.Exception.StackTrace}",
-            "Application Error",
+            $"申し訳ございませんが、アプリケーションでエラーが発生しました。\n\nアプリケーションを再起動してください。\n\nエラー詳細: {e.Exception.Message}",
+            "Spotify Playlist Manager - エラー",
             MessageBoxButton.OK,
             MessageBoxImage.Error);
         e.Handled = true;
@@ -80,8 +80,8 @@ public partial class App : Application
     {
         var exception = e.ExceptionObject as Exception;
         MessageBox.Show(
-            $"A fatal unhandled exception occurred:\n\n{exception?.Message}\n\nStack Trace:\n{exception?.StackTrace}",
-            "Fatal Application Error",
+            $"申し訳ございませんが、重大なエラーが発生しました。\n\nアプリケーションを終了します。\n\nエラー詳細: {exception?.Message}",
+            "Spotify Playlist Manager - 重大なエラー",
             MessageBoxButton.OK,
             MessageBoxImage.Error);
     }
