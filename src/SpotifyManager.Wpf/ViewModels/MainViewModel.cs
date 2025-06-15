@@ -179,8 +179,85 @@ public partial class MainViewModel : ObservableObject
 
     private async Task DeleteSelectedItemsAsync()
     {
-        // TODO: 実装は次のPBIで行う
-        Console.WriteLine("[MainViewModel] 削除処理（未実装）");
-        await Task.CompletedTask;
+        try
+        {
+            // 確認ダイアログ
+            var result = System.Windows.MessageBox.Show(
+                "選択されたアイテムを削除します。この操作は元に戻せません。よろしいですか？",
+                "削除確認",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (result != System.Windows.MessageBoxResult.Yes)
+                return;
+
+            Console.WriteLine("[MainViewModel] 削除処理開始");
+
+            // 選択された項目を収集
+            var playlistsToDelete = new List<PlaylistViewModel>();
+            var tracksToDeleteByPlaylist = new Dictionary<string, List<TrackViewModel>>();
+
+            foreach (var playlist in Playlists)
+            {
+                // プレイリスト全体が選択されている場合
+                if (playlist.IsChecked == true)
+                {
+                    playlistsToDelete.Add(playlist);
+                }
+                // 楽曲が個別に選択されている場合
+                else if (playlist.Tracks.Any(t => t.IsSelected))
+                {
+                    var selectedTracks = playlist.Tracks.Where(t => t.IsSelected).ToList();
+                    tracksToDeleteByPlaylist[playlist.PlaylistInfo.Id] = selectedTracks;
+                }
+            }
+
+            // プレイリスト削除
+            foreach (var playlist in playlistsToDelete)
+            {
+                Console.WriteLine($"[MainViewModel] プレイリスト削除: {playlist.PlaylistInfo.Name}");
+                await _playlistService.DeletePlaylistAsync(playlist.PlaylistInfo.Id);
+            }
+
+            // 楽曲削除
+            foreach (var kvp in tracksToDeleteByPlaylist)
+            {
+                var playlistId = kvp.Key;
+                var tracks = kvp.Value;
+                var trackUris = tracks.Select(t => t.TrackInfo.Uri).ToList();
+                
+                Console.WriteLine($"[MainViewModel] 楽曲削除: プレイリスト {playlistId}, {tracks.Count}件");
+                await _playlistService.DeleteTracksAsync(playlistId, trackUris);
+                
+                // プレイリストから削除された楽曲を除去してトラック数を更新
+                var playlist = Playlists.FirstOrDefault(p => p.PlaylistInfo.Id == playlistId);
+                if (playlist != null)
+                {
+                    // 削除された楽曲をTracksコレクションから除去
+                    foreach (var trackToRemove in tracks)
+                    {
+                        playlist.Tracks.Remove(trackToRemove);
+                    }
+                    
+                    // トラック数を更新
+                    playlist.PlaylistInfo.TrackCount = playlist.Tracks.Count;
+                    playlist.OnPropertyChanged(nameof(playlist.PlaylistInfo));
+                }
+            }
+
+            // UIを更新（プレイリスト一覧を再読み込み）
+            await LoadPlaylistsAsync();
+
+            Console.WriteLine("[MainViewModel] 削除処理完了");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainViewModel] 削除処理エラー: {ex.Message}");
+            System.Windows.MessageBox.Show(
+                $"削除処理中にエラーが発生しました: {ex.Message}",
+                "エラー",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+        }
     }
 }

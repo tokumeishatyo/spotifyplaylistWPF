@@ -193,6 +193,11 @@ public partial class PlaylistViewModel : ObservableObject
         SelectionChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    public new void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    {
+        base.OnPropertyChanged(propertyName);
+    }
+
     public void HandleTrackClick(TrackViewModel clickedTrack, bool isShiftPressed)
     {
         if (isShiftPressed && _lastSelectedTrack != null && _lastSelectedTrack != clickedTrack)
