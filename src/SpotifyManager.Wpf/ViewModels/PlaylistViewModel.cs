@@ -168,12 +168,10 @@ public partial class PlaylistViewModel : ObservableObject
         {
             IsChecked = false;
         }
-        else if (checkedCount == Tracks.Count && Tracks.Count > 0)
-        {
-            IsChecked = true;
-        }
         else
         {
+            // 楽曲が個別に選択された場合は常に中間状態を維持
+            // プレイリストのON状態は、ユーザーが直接プレイリストをクリックした場合のみ
             IsChecked = null; // 中間状態
         }
         
