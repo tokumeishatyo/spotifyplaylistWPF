@@ -85,24 +85,79 @@ public class SearchService : ISearchService
 
     private async Task<IEnumerable<SearchResult>> SearchByKeywordAsync(Core.Interfaces.SearchRequest request)
     {
-        var results = _cachedTracks.AsEnumerable();
+        var results = new List<SearchResult>();
+        
+        // まずプレイリストのキャッシュから検索
+        var cachedResults = _cachedTracks.AsEnumerable();
         
         if (!string.IsNullOrWhiteSpace(request.TrackName))
         {
-            results = results.Where(r => r.TrackInfo.Name.Contains(request.TrackName, StringComparison.OrdinalIgnoreCase));
+            cachedResults = cachedResults.Where(r => r.TrackInfo.Name.Contains(request.TrackName, StringComparison.OrdinalIgnoreCase));
         }
         
         if (!string.IsNullOrWhiteSpace(request.ArtistName))
         {
-            results = results.Where(r => r.TrackInfo.Artists.Any(a => a.Contains(request.ArtistName, StringComparison.OrdinalIgnoreCase)));
+            cachedResults = cachedResults.Where(r => r.TrackInfo.Artists.Any(a => a.Contains(request.ArtistName, StringComparison.OrdinalIgnoreCase)));
         }
         
         if (!string.IsNullOrWhiteSpace(request.AlbumName))
         {
-            results = results.Where(r => r.TrackInfo.AlbumName.Contains(request.AlbumName, StringComparison.OrdinalIgnoreCase));
+            cachedResults = cachedResults.Where(r => r.TrackInfo.AlbumName.Contains(request.AlbumName, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        results.AddRange(cachedResults);
+        
+        // Spotify Web APIからも検索（プレイリストにない曲も含む）
+        try
+        {
+            var query = BuildSearchQuery(request);
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var spotifyTracks = await _playlistService.SearchTracksAsync(query, request.MaxResults);
+                
+                foreach (var track in spotifyTracks)
+                {
+                    // 既にプレイリストに含まれている曲は除外（重複防止）
+                    if (!results.Any(r => r.TrackInfo.Id == track.Id))
+                    {
+                        results.Add(new SearchResult
+                        {
+                            TrackInfo = track,
+                            PlaylistName = "Spotify検索結果",
+                            PlaylistId = string.Empty
+                        });
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SearchService] Spotify検索エラー");
         }
         
         return results.Take(request.MaxResults);
+    }
+    
+    private string BuildSearchQuery(Core.Interfaces.SearchRequest request)
+    {
+        var queryParts = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(request.TrackName))
+        {
+            queryParts.Add($"track:\"{request.TrackName}\"");
+        }
+        
+        if (!string.IsNullOrWhiteSpace(request.ArtistName))
+        {
+            queryParts.Add($"artist:\"{request.ArtistName}\"");
+        }
+        
+        if (!string.IsNullOrWhiteSpace(request.AlbumName))
+        {
+            queryParts.Add($"album:\"{request.AlbumName}\"");
+        }
+        
+        return string.Join(" ", queryParts);
     }
 
     private async Task<IEnumerable<SearchResult>> SearchByMoodAsync(Core.Interfaces.SearchRequest request)
@@ -115,18 +170,42 @@ public class SearchService : ISearchService
         var keywords = _moodMappings[request.Mood];
         var results = new List<SearchResult>();
         
-        foreach (var keyword in keywords)
+        try
         {
-            var matches = _cachedTracks.Where(r => 
-                r.TrackInfo.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                r.TrackInfo.AlbumName.Contains(keyword, StringComparison.OrdinalIgnoreCase)
-            );
+            // おまかせ検索はSpotify Web APIから直接検索（プレイリストにない楽曲を含む）
+            foreach (var keyword in keywords)
+            {
+                _logger.LogInformation($"[SearchService] おまかせ検索: {keyword}");
+                
+                var spotifyTracks = await _playlistService.SearchTracksAsync(keyword, request.MaxResults / keywords.Count + 1);
+                
+                foreach (var track in spotifyTracks)
+                {
+                    // 重複チェック
+                    if (!results.Any(r => r.TrackInfo.Id == track.Id))
+                    {
+                        results.Add(new SearchResult
+                        {
+                            TrackInfo = track,
+                            PlaylistName = "Spotify検索結果",
+                            PlaylistId = string.Empty
+                        });
+                    }
+                }
+            }
             
-            results.AddRange(matches);
+            // ランダムに並び替えて多様性を持たせる
+            var random = new Random();
+            results = results.OrderBy(x => random.Next()).ToList();
+            
+            _logger.LogInformation($"[SearchService] おまかせ検索完了: {results.Count}件");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SearchService] おまかせ検索エラー");
         }
         
-        // 重複除去
-        return results.DistinctBy(r => r.TrackInfo.Id).Take(request.MaxResults);
+        return results.Take(request.MaxResults);
     }
 
     private void LoadMoodMappings()

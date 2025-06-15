@@ -77,10 +77,12 @@
                 <!-- Search Mode Selector -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,5">
                     <RadioButton Content="キーワード検索" 
+                                GroupName="SearchMode"
                                 IsChecked="{Binding IsKeywordSearchMode, Mode=TwoWay}"
                                 Foreground="{DynamicResource PrimaryTextBrush}"
                                 Margin="0,0,20,0"/>
                     <RadioButton Content="おまかせ検索" 
+                                GroupName="SearchMode"
                                 IsChecked="{Binding IsOmakaseSearchMode, Mode=TwoWay}"
                                 Foreground="{DynamicResource PrimaryTextBrush}"/>
                 </StackPanel>
@@ -124,7 +126,11 @@
                     <TextBlock Grid.Column="0" Text="今日の気分:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="{DynamicResource PrimaryTextBrush}"/>
                     <ComboBox Grid.Column="1" 
                              ItemsSource="{Binding AvailableMoods}"
-                             SelectedItem="{Binding SelectedMood, Mode=TwoWay}"/>
+                             SelectedItem="{Binding SelectedMood, Mode=TwoWay}"
+                             Background="{DynamicResource SecondaryBackgroundBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             MinHeight="25"/>
                 </Grid>
                 
                 <!-- Search Controls -->
@@ -132,6 +138,10 @@
                     <TextBlock Text="表示件数:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="{DynamicResource PrimaryTextBrush}"/>
                     <ComboBox SelectedValue="{Binding MaxResults, Mode=TwoWay}" 
                              SelectedValuePath="Content"
+                             Background="{DynamicResource SecondaryBackgroundBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             MinHeight="25"
                              Margin="0,0,20,0">
                         <ComboBoxItem Content="20"/>
                         <ComboBoxItem Content="50"/>
@@ -166,11 +176,15 @@
                               Margin="0,0,0,5"
                               Foreground="{DynamicResource PrimaryTextBrush}"/>
                     
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <ListView ItemsSource="{Binding SearchResults}" 
-                                 Background="{DynamicResource PrimaryBackgroundBrush}"
-                                 BorderThickness="1"
-                                 BorderBrush="{DynamicResource BorderBrush}">
+                    <ListView Grid.Row="1"
+                             ItemsSource="{Binding SearchResults}" 
+                             Background="{DynamicResource PrimaryBackgroundBrush}"
+                             BorderThickness="1"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.CanContentScroll="True"
+                             ScrollViewer.PanningMode="VerticalOnly">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Margin="5">
@@ -214,24 +228,38 @@
                                             </Grid>
                                         </Border>
                                         
-                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" MinWidth="400">
+                                            <!-- 曲名 -->
                                             <TextBlock Text="{Binding TrackInfo.Name}" 
                                                       FontWeight="SemiBold"
-                                                      FontSize="12"
-                                                      Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                      FontSize="13"
+                                                      Foreground="{DynamicResource PrimaryTextBrush}"
+                                                      TextTrimming="CharacterEllipsis"/>
+                                            
+                                            <!-- アーティスト名 -->
                                             <TextBlock Text="{Binding ArtistsText}"
+                                                      FontSize="11"
+                                                      Foreground="{DynamicResource SecondaryTextBrush}"
+                                                      TextTrimming="CharacterEllipsis"/>
+                                            
+                                            <!-- 収録アルバム -->
+                                            <TextBlock Text="{Binding AlbumText}"
                                                       FontSize="10"
-                                                      Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                            <TextBlock Text="{Binding PlaylistName, StringFormat='({0})'}"
-                                                      FontSize="10"
+                                                      Foreground="{DynamicResource SecondaryTextBrush}"
                                                       FontStyle="Italic"
-                                                      Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                      TextTrimming="CharacterEllipsis"/>
+                                            
+                                            <!-- プレイリスト名 -->
+                                            <TextBlock Text="{Binding PlaylistDisplayText}"
+                                                      FontSize="9"
+                                                      Foreground="{DynamicResource SecondaryTextBrush}"
+                                                      Opacity="0.7"
+                                                      TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-                    </ScrollViewer>
                 </Grid>
             </Grid>
         </Expander>

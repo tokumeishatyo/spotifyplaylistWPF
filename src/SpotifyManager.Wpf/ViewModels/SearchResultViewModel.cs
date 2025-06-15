@@ -1,11 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using SpotifyManager.Core.Interfaces;
+using SpotifyManager.Core.Models;
 
 namespace SpotifyManager.Wpf.ViewModels;
 
 public partial class SearchResultViewModel : ObservableObject
 {
     public SearchResult SearchResult { get; }
+    public TrackInfo TrackInfo => SearchResult.TrackInfo;
 
     public SearchResultViewModel(SearchResult searchResult)
     {
@@ -13,4 +15,13 @@ public partial class SearchResultViewModel : ObservableObject
     }
 
     public string ArtistsText => string.Join(", ", SearchResult.TrackInfo.Artists);
+    
+    public string AlbumText => SearchResult.TrackInfo.AlbumName;
+    
+    public string PlaylistName => SearchResult.PlaylistName;
+    
+    public string PlaylistDisplayText => 
+        SearchResult.PlaylistName == "Spotify検索結果" 
+            ? "Spotify検索" 
+            : $"プレイリスト: {SearchResult.PlaylistName}";
 }

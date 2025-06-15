@@ -47,6 +47,16 @@ Spotify プレイリスト管理アプリケーション（WPF）
 - テーマ設定の永続化（次回起動時に復元）
 - 選択状態に応じたDeleteボタンの表示/非表示制御
 
+**PBI-07: 楽曲検索機能**
+- キーワード検索（楽曲名・アーティスト名・アルバム名）
+- おまかせ検索（気分に基づく楽曲発見）
+- 2段階検索アルゴリズム（プレイリスト内 + Spotify Web API）
+- 気分マッピング設定（appsettings.json）
+- 検索結果の詳細表示（曲画像・曲名・アーティスト・アルバム・プレイリスト情報）
+- 重複防止機能と結果のランダム化
+- マウスホイールスクロール対応
+- ダークモード完全対応（ComboBox・テキスト表示最適化）
+
 **基本アーキテクチャ**
 - DLL分割アーキテクチャ（Core, Auth, Playlist, Theme, Wpf）
 - MVVM パターン実装
@@ -61,7 +71,8 @@ SpotifyManager.exe (Wpf)
 ├── SpotifyManager.Core.dll     # 共通インターフェース
 ├── SpotifyManager.Auth.dll     # 認証機能
 ├── SpotifyManager.Playlist.dll # プレイリスト機能
-└── SpotifyManager.Theme.dll    # テーマ機能
+├── SpotifyManager.Theme.dll    # テーマ機能
+└── SpotifyManager.Search.dll   # 検索機能
 ```
 
 ### 🚀 実行方法
@@ -97,6 +108,7 @@ dotnet run --project src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj
 8. マウスホイールでスクロール可能
 9. 選択した楽曲があるとDeleteボタンが表示される
 10. ヘッダーのテーマボタンでライト/ダークテーマ切り替え
+11. 検索パネルでキーワード検索・おまかせ検索が利用可能
 
 ### 🎵 主な機能
 
@@ -129,17 +141,25 @@ dotnet run --project src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj
 - 全UI要素のテーマ対応
 - テーマ設定の永続化
 
+**検索機能:**
+- キーワード検索（楽曲名・アーティスト名・アルバム名による絞り込み）
+- おまかせ検索（気分ベースの楽曲発見）
+- プレイリスト内楽曲 + Spotify検索結果の統合表示
+- 5種類の気分設定（アップテンポ・リラックス・集中・パーティー・切ない）
+- 検索結果の詳細表示とマウスホイールスクロール
+
 ### 📝 注記
 
 - Spotify Premium アカウントが必要
 - 初回起動時にSpotify認証が必要
 - 削除機能（選択したアイテムの削除）実装済み
 - テーマ切り替え機能実装済み
+- 検索機能（キーワード・おまかせ検索）実装済み
 - Client ID はBase64エンコードによる軽微な難読化を実装済み
 
 ### 📦 リリース情報
 
-**v1.0.0-beta (PBI-01〜06完了版)**
+**v1.1.0-beta (PBI-01〜07完了版)**
 - **ファイル:** `release/SpotifyManager.exe`
 - **サイズ:** 158MB（単一実行ファイル）
 - **要件:** Windows 10/11 64-bit
@@ -176,10 +196,10 @@ dotnet publish src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj -c Release -r wi
 
 ### 📦 次期実装予定機能
 
-- **PBI-07:** 楽曲検索機能
 - **PBI-08:** 重複楽曲検出・削除
 - **PBI-09:** 設定画面
 - **PBI-10:** プレイリスト作成・編集機能
+- **PBI-11:** 検索結果のプレイリスト追加機能
 
 ### 🔒 セキュリティ対策
 

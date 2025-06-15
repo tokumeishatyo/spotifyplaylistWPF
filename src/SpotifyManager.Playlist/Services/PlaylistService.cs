@@ -183,6 +183,58 @@ public class PlaylistService : IPlaylistService
         }
     }
 
+    public async Task<IEnumerable<TrackInfo>> SearchTracksAsync(string query, int limit = 20)
+    {
+        try
+        {
+            Console.WriteLine($"[Playlist] 楽曲検索開始: {query}");
+            var spotify = GetSpotifyClient();
+            if (spotify == null)
+            {
+                Console.WriteLine("[Playlist] SpotifyClientが取得できませんでした");
+                return Enumerable.Empty<TrackInfo>();
+            }
+
+            var searchRequest = new SpotifyAPI.Web.SearchRequest(SpotifyAPI.Web.SearchRequest.Types.Track, query)
+            {
+                Limit = limit
+            };
+
+            var searchResult = await spotify.Search.Item(searchRequest);
+            var tracks = new List<TrackInfo>();
+
+            if (searchResult.Tracks?.Items != null)
+            {
+                foreach (var track in searchResult.Tracks.Items)
+                {
+                    var trackInfo = new TrackInfo
+                    {
+                        Id = track.Id,
+                        Name = track.Name,
+                        Uri = track.Uri,
+                        PlaylistId = string.Empty, // 検索結果なのでプレイリストIDはなし
+                        Artists = track.Artists.Select(a => a.Name).ToList(),
+                        AlbumName = track.Album?.Name,
+                        AlbumImageUrl = track.Album?.Images?.FirstOrDefault()?.Url,
+                        DurationMs = track.DurationMs,
+                        IsLocal = false
+                    };
+
+                    tracks.Add(trackInfo);
+                }
+            }
+
+            Console.WriteLine($"[Playlist] 楽曲検索完了: {tracks.Count}件");
+            return tracks;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Playlist] 楽曲検索エラー: {ex.Message}");
+            Debug.WriteLine($"楽曲検索エラー: {ex}");
+            return Enumerable.Empty<TrackInfo>();
+        }
+    }
+
     private SpotifyClient? GetSpotifyClient()
     {
         return _authService.GetSpotifyClient() as SpotifyClient;

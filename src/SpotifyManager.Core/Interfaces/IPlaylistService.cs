@@ -8,4 +8,5 @@ public interface IPlaylistService
     Task<IEnumerable<TrackInfo>> GetTracksAsync(string playlistId);
     Task DeletePlaylistAsync(string playlistId);
     Task DeleteTracksAsync(string playlistId, IEnumerable<string> trackUris);
+    Task<IEnumerable<TrackInfo>> SearchTracksAsync(string query, int limit = 20);
 }

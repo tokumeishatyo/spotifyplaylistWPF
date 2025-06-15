@@ -102,10 +102,60 @@ public partial class MainViewModel : ObservableObject
 
     private async Task InitializeAsync()
     {
+        // 基本情報の読み込み
         await LoadUserInfoAsync();
         await LoadCurrentThemeAsync();
-        await LoadPlaylistsAsync();
-        await InitializeSearchAsync();
+        
+        // 気分データの初期化（プレイリスト読み込みと並行して実行）
+        InitializeMoodsFromConfig();
+        
+        // プレイリスト読み込みと検索キャッシュ初期化を並行実行
+        var playlistTask = LoadPlaylistsAsync();
+        var searchCacheTask = InitializeSearchCacheAsync();
+        
+        await Task.WhenAll(playlistTask, searchCacheTask);
+    }
+    
+    private void InitializeMoodsFromConfig()
+    {
+        try
+        {
+            Console.WriteLine("[MainViewModel] 気分データ初期化開始");
+            
+            // 気分の選択肢を設定ファイルから読み込み
+            var moods = _searchService.GetAvailableMoods();
+            AvailableMoods.Clear();
+            foreach (var mood in moods)
+            {
+                AvailableMoods.Add(mood);
+                Console.WriteLine($"[MainViewModel] 気分追加: {mood}");
+            }
+            
+            Console.WriteLine($"[MainViewModel] 気分データ初期化完了: {AvailableMoods.Count}種類");
+            
+            // UIの強制更新
+            OnPropertyChanged(nameof(AvailableMoods));
+            OnPropertyChanged(nameof(IsKeywordSearchMode));
+            OnPropertyChanged(nameof(IsOmakaseSearchMode));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainViewModel] 気分データ初期化エラー: {ex.Message}");
+        }
+    }
+    
+    private async Task InitializeSearchCacheAsync()
+    {
+        try
+        {
+            Console.WriteLine("[MainViewModel] 検索キャッシュ初期化開始");
+            await _searchService.InitializeCacheAsync();
+            Console.WriteLine("[MainViewModel] 検索キャッシュ初期化完了");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainViewModel] 検索キャッシュ初期化エラー: {ex.Message}");
+        }
     }
 
     private async Task LoadUserInfoAsync()
@@ -309,29 +359,6 @@ public partial class MainViewModel : ObservableObject
     }
 
     // Search related methods
-    private async Task InitializeSearchAsync()
-    {
-        try
-        {
-            Console.WriteLine("[MainViewModel] 検索初期化開始");
-            
-            // 検索サービスのキャッシュ初期化
-            await _searchService.InitializeCacheAsync();
-            
-            // 気分の選択肢を読み込み
-            var moods = _searchService.GetAvailableMoods();
-            foreach (var mood in moods)
-            {
-                AvailableMoods.Add(mood);
-            }
-            
-            Console.WriteLine($"[MainViewModel] 検索初期化完了: {AvailableMoods.Count}種類の気分");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[MainViewModel] 検索初期化エラー: {ex.Message}");
-        }
-    }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -339,12 +366,18 @@ public partial class MainViewModel : ObservableObject
         {
             case nameof(IsKeywordSearchMode):
                 if (IsKeywordSearchMode)
+                {
                     IsOmakaseSearchMode = false;
+                    Console.WriteLine("[MainViewModel] キーワード検索モードに切替");
+                }
                 UpdateSearchCommandCanExecute();
                 break;
             case nameof(IsOmakaseSearchMode):
                 if (IsOmakaseSearchMode)
+                {
                     IsKeywordSearchMode = false;
+                    Console.WriteLine("[MainViewModel] おまかせ検索モードに切替");
+                }
                 UpdateSearchCommandCanExecute();
                 break;
             case nameof(SearchTrackName):

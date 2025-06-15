@@ -31,6 +31,7 @@
                         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
                         <Setter Property="BorderThickness" Value="1"/>
                         <Setter Property="Padding" Value="3"/>
+                        <Setter Property="MinHeight" Value="25"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ComboBox">
@@ -52,19 +53,8 @@
                                                                   Content="{TemplateBinding SelectionBoxItem}"
                                                                   ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                                                   ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                                  TextElement.Foreground="{TemplateBinding Foreground}"
                                                                   IsHitTestVisible="False"/>
-                                                <TextBox Name="PART_EditableTextBox"
-                                                         Grid.Column="0"
-                                                         Style="{x:Null}"
-                                                         Template="{x:Null}"
-                                                         HorizontalAlignment="Left"
-                                                         VerticalAlignment="Center"
-                                                         Margin="{TemplateBinding Padding}"
-                                                         Focusable="True"
-                                                         Background="Transparent"
-                                                         Foreground="{TemplateBinding Foreground}"
-                                                         Visibility="Hidden"
-                                                         IsReadOnly="{TemplateBinding IsReadOnly}"/>
                                                 <ToggleButton Name="ToggleButton"
                                                               Grid.Column="1"
                                                               Focusable="false"
@@ -111,7 +101,7 @@
                     
                     <!-- ComboBoxItem Style -->
                     <Style TargetType="ComboBoxItem">
-                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
                         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="Padding" Value="5,2"/>
@@ -126,7 +116,8 @@
                                             BorderThickness="{TemplateBinding BorderThickness}"
                                             Padding="{TemplateBinding Padding}">
                                         <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsHighlighted" Value="True">
