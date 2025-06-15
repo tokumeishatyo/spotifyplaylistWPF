@@ -24,6 +24,14 @@ Spotify プレイリスト管理アプリケーション（WPF）
 - チェックボックスによる楽曲選択機能
 - ローディングインジケーター表示
 
+**PBI-04: アイテム選択機能**
+- 3状態チェックボックス（プレイリスト：ON/OFF/中間状態）
+- 親子チェックボックスの双方向連動機能
+- Shift+クリックによる楽曲範囲選択
+- Deleteボタンの選択状態による活性制御
+- TreeView閉じた状態でのチェック状態保持
+- ユーザビリティを考慮した2状態クリック動作
+
 **基本アーキテクチャ**
 - DLL分割アーキテクチャ（Core, Auth, Playlist, Theme, Wpf）
 - MVVM パターン実装
@@ -61,8 +69,10 @@ dotnet run --project src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj
 3. ブラウザでSpotify認証を完了
 4. プレイリスト一覧が自動的に読み込まれる
 5. プレイリストをクリックして楽曲リストを展開
-6. チェックボックスで楽曲を選択
-7. マウスホイールでスクロール可能
+6. チェックボックスで楽曲を選択（Shift+クリックで範囲選択）
+7. プレイリストのチェックで配下全楽曲を一括選択
+8. マウスホイールでスクロール可能
+9. 選択した楽曲があるとDeleteボタンが活性化
 
 ### 🎵 主な機能
 
@@ -75,7 +85,13 @@ dotnet run --project src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj
 - 楽曲一覧の遅延読み込み
 - アルバム画像表示
 - アーティスト名・再生時間表示
-- 複数楽曲の選択機能
+- 複数楽曲の選択機能（個別・範囲・一括選択）
+
+**選択機能:**
+- 3状態チェックボックス（チェック/未チェック/中間状態）
+- 親子連動（プレイリスト⇔楽曲）
+- Shift+クリックによる範囲選択
+- TreeView未展開時の状態保持
 
 **パフォーマンス:**
 - 大量プレイリスト対応（UI仮想化）
@@ -86,7 +102,8 @@ dotnet run --project src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj
 
 - Spotify Premium アカウントが必要
 - 初回起動時にSpotify認証が必要
-- プレイリストの削除・楽曲削除機能は次の段階で実装予定
+- 削除機能（選択したアイテムの削除）は次の段階で実装予定
+- Client ID はBase64エンコードによる軽微な難読化を実装済み
 
 ### 🔧 開発コマンド
 
@@ -112,6 +129,17 @@ dotnet publish src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj -c Release -o pu
 
 ### 📦 次期実装予定機能
 
-- **PBI-04:** アイテム選択機能の拡張
-- **PBI-05:** プレイリスト・楽曲削除機能
+- **PBI-05:** プレイリスト・楽曲削除機能（選択したアイテムの削除実行）
 - **PBI-06:** ダーク/ライトテーマ切り替え機能
+
+### 🔒 セキュリティ対策
+
+- **Client ID の難読化**
+  - Base64エンコードによる軽微な暗号化
+  - 変数名の意図隠蔽（AppConfig等）
+  - 設定エラー時の適切な例外処理
+
+- **認証セキュリティ**
+  - PKCE (Proof Key for Code Exchange) 認証フロー
+  - リフレッシュトークンの安全な保存（Windows Credential Manager）
+  - Client Secretレス認証
