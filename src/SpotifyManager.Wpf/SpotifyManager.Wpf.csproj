@@ -10,6 +10,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>SpotifyManager</AssemblyName>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   
   <!-- Release Configuration -->
@@ -36,10 +37,10 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="icon.jpg">
+    <Content Include="icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="icon.jpg" />
+    <Resource Include="icon.ico" />
   </ItemGroup>
 
 </Project>

@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Spotify Playlist Manager" Height="900" Width="900"
         WindowStartupLocation="CenterScreen"
-        Icon="icon.jpg">
+        Icon="icon.ico">
     <Grid Background="{DynamicResource PrimaryBackgroundBrush}">
         <ContentControl x:Name="MainContent" />
     </Grid>

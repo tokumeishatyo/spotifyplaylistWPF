@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PrimaryBackgroundBrush}"
         ResizeMode="NoResize"
-        Icon="pack://application:,,,/icon.jpg">
+        Icon="pack://application:,,,/icon.ico">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
