@@ -9,4 +9,6 @@ public interface IPlaylistService
     Task DeletePlaylistAsync(string playlistId);
     Task DeleteTracksAsync(string playlistId, IEnumerable<string> trackUris);
     Task<IEnumerable<TrackInfo>> SearchTracksAsync(string query, int limit = 20);
+    Task<PlaylistInfo> CreatePlaylistAsync(string name, string? description = null);
+    Task AddTracksToPlaylistAsync(string playlistId, IEnumerable<string> trackUris);
 }

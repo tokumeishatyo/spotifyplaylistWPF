@@ -597,7 +597,7 @@ public partial class MainViewModel : ObservableObject
         return HasSelectedItems;
     }
 
-    private void AddToNewPlaylist()
+    private async void AddToNewPlaylist()
     {
         try
         {
@@ -612,27 +612,74 @@ public partial class MainViewModel : ObservableObject
                 selectedTracks.AddRange(playlist.Tracks.Where(t => t.IsSelected).Select(t => t.TrackInfo));
             }
             
-            Console.WriteLine($"[MainViewModel] 新規プレイリストに{selectedTracks.Count}件の楽曲を追加（未実装）");
+            if (selectedTracks.Count == 0)
+            {
+                System.Windows.MessageBox.Show(
+                    "楽曲が選択されていません。",
+                    "情報",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+                return;
+            }
             
-            // TODO: 新規プレイリスト作成ダイアログを表示
-            // TODO: プレイリスト作成と楽曲追加を実行
+            Console.WriteLine($"[MainViewModel] 新規プレイリストに{selectedTracks.Count}件の楽曲を追加");
+            
+            // ダイアログを表示
+            var dialog = new SpotifyManager.Wpf.Views.CreatePlaylistDialog(selectedTracks.Count);
+            var result = dialog.ShowDialog();
+            
+            if (result != true || string.IsNullOrWhiteSpace(dialog.PlaylistName))
+            {
+                Console.WriteLine("[MainViewModel] プレイリスト作成がキャンセルされました");
+                return;
+            }
+            
+            // プレイリストを作成
+            var newPlaylist = await _playlistService.CreatePlaylistAsync(dialog.PlaylistName);
+            
+            // 楽曲を追加
+            if (selectedTracks.Any())
+            {
+                var trackUris = selectedTracks.Select(t => t.Uri).ToList();
+                await _playlistService.AddTracksToPlaylistAsync(newPlaylist.Id, trackUris);
+                
+                // TrackCountを更新
+                newPlaylist.TrackCount = selectedTracks.Count;
+                
+                // 最初の楽曲のアルバム画像をプレイリスト画像として設定
+                var firstTrackWithImage = selectedTracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumImageUrl));
+                if (firstTrackWithImage != null)
+                {
+                    newPlaylist.ImageUrl = firstTrackWithImage.AlbumImageUrl;
+                }
+            }
+            
+            // プレイリストViewModelを作成してリストに追加
+            var playlistViewModel = new PlaylistViewModel(newPlaylist, _playlistService);
+            playlistViewModel.PropertyChanged += OnPlaylistPropertyChanged;
+            playlistViewModel.SelectionChanged += OnPlaylistSelectionChanged;
+            Playlists.Add(playlistViewModel);
+            
+            // 選択をクリア
+            ClearAllSelections();
             
             System.Windows.MessageBox.Show(
-                $"{selectedTracks.Count}件の楽曲を新規プレイリストに追加する機能は次回実装予定です。",
-                "機能準備中",
+                $"プレイリスト「{newPlaylist.Name}」を作成し、{selectedTracks.Count}件の楽曲を追加しました。",
+                "完了",
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Information);
+                
+            Console.WriteLine($"[MainViewModel] 新規プレイリスト作成完了: {newPlaylist.Name}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[MainViewModel] 新規プレイリスト追加エラー: {ex.Message}");
             System.Windows.MessageBox.Show(
-                $"新規プレイリスト追加中にエラーが発生しました: {ex.Message}",
+                $"新規プレイリスト作成中にエラーが発生しました: {ex.Message}",
                 "エラー",
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Error);
         }
-        
     }
 
     private void AddToExistingPlaylist()
@@ -670,5 +717,26 @@ public partial class MainViewModel : ObservableObject
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Error);
         }
+    }
+
+    private void ClearAllSelections()
+    {
+        // 検索結果の選択をクリア
+        foreach (var result in SearchResults)
+        {
+            result.IsSelected = false;
+        }
+        
+        // プレイリストの選択をクリア
+        foreach (var playlist in Playlists)
+        {
+            playlist.IsChecked = false;
+            foreach (var track in playlist.Tracks)
+            {
+                track.IsSelected = false;
+            }
+        }
+        
+        Console.WriteLine("[MainViewModel] すべての選択をクリアしました");
     }
 }

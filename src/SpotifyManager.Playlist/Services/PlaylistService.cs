@@ -235,6 +235,73 @@ public class PlaylistService : IPlaylistService
         }
     }
 
+    public async Task<PlaylistInfo> CreatePlaylistAsync(string name, string? description = null)
+    {
+        try
+        {
+            Console.WriteLine($"[Playlist] プレイリスト作成開始: {name}");
+            var spotify = GetSpotifyClient();
+            if (spotify == null)
+            {
+                throw new InvalidOperationException("SpotifyClientが取得できませんでした");
+            }
+
+            var currentUser = await spotify.UserProfile.Current();
+            var request = new PlaylistCreateRequest(name)
+            {
+                Description = description,
+                Public = false // デフォルトは非公開
+            };
+
+            var playlist = await spotify.Playlists.Create(currentUser.Id, request);
+            
+            var playlistInfo = new PlaylistInfo
+            {
+                Id = playlist.Id!,
+                Name = playlist.Name!,
+                Description = playlist.Description,
+                ImageUrl = playlist.Images?.FirstOrDefault()?.Url,
+                TrackCount = 0, // 新規作成なので0
+                IsOwner = true,
+                CanEdit = true,
+                IsPublic = playlist.Public ?? false
+            };
+
+            Console.WriteLine($"[Playlist] プレイリスト作成完了: {name} (ID: {playlist.Id})");
+            return playlistInfo;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Playlist] プレイリスト作成エラー: {ex.Message}");
+            Debug.WriteLine($"プレイリスト作成エラー: {ex}");
+            throw;
+        }
+    }
+
+    public async Task AddTracksToPlaylistAsync(string playlistId, IEnumerable<string> trackUris)
+    {
+        try
+        {
+            Console.WriteLine($"[Playlist] 楽曲追加開始: {playlistId}, {trackUris.Count()}件");
+            var spotify = GetSpotifyClient();
+            if (spotify == null)
+            {
+                throw new InvalidOperationException("SpotifyClientが取得できませんでした");
+            }
+
+            var request = new PlaylistAddItemsRequest(trackUris.ToList());
+            await spotify.Playlists.AddItems(playlistId, request);
+
+            Console.WriteLine($"[Playlist] 楽曲追加完了: {trackUris.Count()}件");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Playlist] 楽曲追加エラー: {ex.Message}");
+            Debug.WriteLine($"楽曲追加エラー: {ex}");
+            throw;
+        }
+    }
+
     private SpotifyClient? GetSpotifyClient()
     {
         return _authService.GetSpotifyClient() as SpotifyClient;
