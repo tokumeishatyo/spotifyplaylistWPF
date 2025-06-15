@@ -255,3 +255,70 @@ dotnet publish src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj -c Release -r wi
   - PKCE (Proof Key for Code Exchange) 認証フロー
   - リフレッシュトークンの安全な保存（Windows Credential Manager）
   - Client Secretレス認証
+
+## 📊 Spotify Playlist Manager v1.3.0 コード行数統計
+
+### 🎯 各ファイルの行数
+
+#### **C# ファイル (34ファイル)**
+```
+src/SpotifyManager.Wpf/ViewModels/MainViewModel.cs                       807 lines
+src/SpotifyManager.Auth/Services/SimpleAuthService.cs                    441 lines
+src/SpotifyManager.Playlist/Services/PlaylistService.cs                  308 lines
+src/SpotifyManager.Search/Services/SearchService.cs                      249 lines
+src/SpotifyManager.Auth/Services/AuthService.cs                          244 lines
+src/SpotifyManager.Wpf/ViewModels/PlaylistViewModel.cs                   240 lines
+src/SpotifyManager.Theme/Services/ThemeService.cs                        125 lines
+src/SpotifyManager.Auth/Services/CredentialService.cs                    104 lines
+src/SpotifyManager.Wpf/MainWindow.xaml.cs                                 75 lines
+src/SpotifyManager.Wpf/ViewModels/LoginViewModel.cs                       73 lines
+src/SpotifyManager.Wpf/Behaviors/ScrollViewerBehavior.cs                  68 lines
+src/SpotifyManager.Wpf/App.xaml.cs                                        64 lines
+src/SpotifyManager.Wpf/ViewModels/SelectPlaylistDialogViewModel.cs        62 lines
+src/SpotifyManager.Wpf/Views/MainView.xaml.cs                             57 lines
+src/SpotifyManager.Wpf/Views/CreatePlaylistDialog.xaml.cs                 44 lines
+src/SpotifyManager.Auth/Configuration/SpotifyAuthConfig.cs                 42 lines
+src/SpotifyManager.Wpf/ViewModels/SearchResultViewModel.cs                37 lines
+src/SpotifyManager.Wpf/Views/SelectPlaylistDialog.xaml.cs                 32 lines
+src/SpotifyManager.Core/Interfaces/ISearchService.cs                      32 lines
+src/SpotifyManager.Wpf/ViewModels/CreatePlaylistDialogViewModel.cs        30 lines
+その他の小さなファイル...                                                305 lines
+```
+
+#### **XAML ファイル (8ファイル)**
+```
+src/SpotifyManager.Wpf/Views/MainView.xaml                               550 lines
+src/SpotifyManager.Wpf/Views/SelectPlaylistDialog.xaml                   153 lines
+src/SpotifyManager.Wpf/App.xaml                                          138 lines
+src/SpotifyManager.Wpf/Views/CreatePlaylistDialog.xaml                    83 lines
+src/SpotifyManager.Wpf/Views/LoginView.xaml                               75 lines
+src/SpotifyManager.Theme/Themes/DarkTheme.xaml                            31 lines
+src/SpotifyManager.Theme/Themes/LightTheme.xaml                           31 lines
+src/SpotifyManager.Wpf/MainWindow.xaml                                    12 lines
+```
+
+#### **設定・ドキュメントファイル (4ファイル)**
+```
+doc/外部仕様書.md                                                   248 lines
+README.md                                                                256 lines
+doc/要件定義書.md                                                   131 lines
+src/SpotifyManager.Wpf/appsettings.json                                   55 lines
+```
+
+### 📈 **総合計**
+
+| カテゴリ | ファイル数 | 行数 |
+|---------|-----------|------|
+| **C# ファイル** | 34 | **3,344 lines** |
+| **XAML ファイル** | 8 | **1,073 lines** |
+| **設定・ドキュメント** | 4 | **690 lines** |
+| **🎯 総合計** | **46** | **🚀 5,107 lines** |
+
+### 🏆 **開発成果**
+- **メインロジック**: MainViewModel.cs (807行) - アプリケーションの中核
+- **認証システム**: SimpleAuthService.cs (441行) - OAuth 2.0 + PKCE
+- **プレイリスト管理**: PlaylistService.cs (308行) - Spotify API統合
+- **UI設計**: MainView.xaml (550行) - 複雑なWPF画面
+- **包括的ドキュメント**: 要件定義 + 外部仕様 + README (635行)
+
+**🎵 Spotify Playlist Manager は総計 5,107行のコードで構成された本格的なWPFアプリケーションです！**
