@@ -157,9 +157,13 @@ dotnet run --project src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj
 - 検索機能（キーワード・おまかせ検索）実装済み
 - Client ID はBase64エンコードによる軽微な難読化を実装済み
 
+### 🎵 UI改善
+- ウィンドウ起動時サイズ: 900x900ピクセル
+- 検索結果表示領域の拡大（300〜400ピクセル）
+
 ### 📦 リリース情報
 
-**v1.1.0-beta (PBI-01〜07完了版)**
+**v1.2.0-beta (PBI-01〜08完了版)**
 - **ファイル:** `release/SpotifyManager.exe`
 - **サイズ:** 158MB（単一実行ファイル）
 - **要件:** Windows 10/11 64-bit
@@ -194,12 +198,19 @@ dotnet publish src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj -c Release -r wi
 - **Microsoft.Extensions.DependencyInjection** - DI コンテナ
 - **System.Security.Cryptography** - PKCE 認証
 
+**PBI-08: 検索楽曲選択機能**
+- 検索結果の楽曲にチェックボックス追加
+- Shift+クリックによる範囲選択機能
+- 全選択・全解除ボタン
+- 選択楽曲数のリアルタイム表示
+- 検索条件変更時の選択状態自動クリア
+- プレイリストと同一のチェックボックスUI
+
 ### 📦 次期実装予定機能
 
-- **PBI-08:** 重複楽曲検出・削除
-- **PBI-09:** 設定画面
-- **PBI-10:** プレイリスト作成・編集機能
-- **PBI-11:** 検索結果のプレイリスト追加機能
+- **PBI-09:** 検索結果のプレイリスト追加機能
+- **PBI-10:** 設定画面
+- **PBI-11:** プレイリスト作成・編集機能
 
 ### 🔒 セキュリティ対策
 

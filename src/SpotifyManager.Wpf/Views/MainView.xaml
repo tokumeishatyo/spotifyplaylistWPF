@@ -167,14 +167,37 @@
                       Margin="0,10,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="200"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     
-                    <TextBlock Grid.Row="0" 
-                              Text="{Binding SearchResultsText}" 
-                              FontWeight="Bold" 
-                              Margin="0,0,0,5"
-                              Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+                        <TextBlock Text="{Binding SearchResultsText}" 
+                                  FontWeight="Bold" 
+                                  Foreground="{DynamicResource PrimaryTextBrush}"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,10,0"/>
+                        
+                        <TextBlock Text="{Binding SelectedSearchResultsText}" 
+                                  FontSize="11"
+                                  Foreground="{DynamicResource SecondaryTextBrush}"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,10,0"/>
+                        
+                        <Button Content="全選択" 
+                               Command="{Binding SelectAllSearchResultsCommand}"
+                               Padding="8,2" 
+                               Margin="0,0,5,0"
+                               FontSize="10"
+                               Background="{DynamicResource ButtonBackgroundBrush}"
+                               Foreground="{DynamicResource ButtonTextBrush}"/>
+                        
+                        <Button Content="全解除" 
+                               Command="{Binding ClearAllSearchResultsCommand}"
+                               Padding="8,2"
+                               FontSize="10"
+                               Background="{DynamicResource ButtonBackgroundBrush}"
+                               Foreground="{DynamicResource ButtonTextBrush}"/>
+                    </StackPanel>
                     
                     <ListView Grid.Row="1"
                              ItemsSource="{Binding SearchResults}" 
@@ -183,11 +206,31 @@
                              BorderBrush="{DynamicResource BorderBrush}"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             ScrollViewer.CanContentScroll="True"
-                             ScrollViewer.PanningMode="VerticalOnly">
-                            <ListView.ItemTemplate>
+                             MinHeight="300"
+                             MaxHeight="400">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListViewItem">
+                                            <ContentPresenter/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Margin="5">
+                                        <!-- Checkbox same as playlist -->
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                 Margin="0,0,10,0"
+                                                 VerticalAlignment="Center"
+                                                 PreviewMouseLeftButtonDown="OnSearchResultCheckBoxPreviewMouseLeftButtonDown"/>
+                                        
                                         <Border Width="30" Height="30" 
                                                CornerRadius="2" 
                                                Margin="0,0,10,0"
@@ -258,8 +301,8 @@
                                         </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </Grid>
             </Grid>
         </Expander>

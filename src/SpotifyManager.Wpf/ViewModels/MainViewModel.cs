@@ -29,7 +29,7 @@ public partial class MainViewModel : ObservableObject
 
     // Search related properties
     [ObservableProperty]
-    private bool _isSearchPanelExpanded;
+    private bool _isSearchPanelExpanded = true;
 
     [ObservableProperty]
     private bool _isKeywordSearchMode = true;
@@ -61,6 +61,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _searchResultsText = string.Empty;
 
+    [ObservableProperty]
+    private string _selectedSearchResultsText = string.Empty;
+
     public ObservableCollection<PlaylistViewModel> Playlists { get; } = new();
     public ObservableCollection<SearchResultViewModel> SearchResults { get; } = new();
     public ObservableCollection<string> AvailableMoods { get; } = new();
@@ -71,6 +74,10 @@ public partial class MainViewModel : ObservableObject
     public ICommand DeleteSelectedCommand { get; }
     public ICommand SearchCommand { get; }
     public ICommand ClearSearchCommand { get; }
+    public ICommand SelectAllSearchResultsCommand { get; }
+    public ICommand ClearAllSearchResultsCommand { get; }
+
+    private int _lastSelectedSearchIndex = -1;
     
     public event EventHandler? LogoutRequested;
 
@@ -91,6 +98,8 @@ public partial class MainViewModel : ObservableObject
         DeleteSelectedCommand = new AsyncRelayCommand(DeleteSelectedItemsAsync, CanDeleteSelectedItems);
         SearchCommand = new AsyncRelayCommand(SearchAsync, CanSearch);
         ClearSearchCommand = new RelayCommand(ClearSearch);
+        SelectAllSearchResultsCommand = new RelayCommand(SelectAllSearchResults);
+        ClearAllSearchResultsCommand = new RelayCommand(ClearAllSearchResults);
         
         Playlists.CollectionChanged += OnPlaylistsCollectionChanged;
         
@@ -384,6 +393,16 @@ public partial class MainViewModel : ObservableObject
             case nameof(SearchArtistName):
             case nameof(SearchAlbumName):
             case nameof(SelectedMood):
+                // Clear search results when search conditions change
+                foreach (var result in SearchResults)
+                {
+                    result.SelectionChanged -= OnSearchResultSelectionChanged;
+                }
+                SearchResults.Clear();
+                HasSearchResults = false;
+                SearchResultsText = string.Empty;
+                SelectedSearchResultsText = string.Empty;
+                _lastSelectedSearchIndex = -1;
                 UpdateSearchCommandCanExecute();
                 break;
         }
@@ -430,22 +449,32 @@ public partial class MainViewModel : ObservableObject
             SearchResults.Clear();
             foreach (var result in results)
             {
-                SearchResults.Add(new SearchResultViewModel(result));
+                var searchResultViewModel = new SearchResultViewModel(result);
+                searchResultViewModel.SelectionChanged += OnSearchResultSelectionChanged;
+                SearchResults.Add(searchResultViewModel);
+                Console.WriteLine($"[MainViewModel] 検索結果追加: {result.TrackInfo.Name} - IsSelected: {searchResultViewModel.IsSelected}");
             }
 
             HasSearchResults = SearchResults.Any();
             SearchResultsText = SearchResults.Any() 
                 ? $"検索結果: {SearchResults.Count}件"
                 : "該当する楽曲が見つかりませんでした。";
+            SelectedSearchResultsText = string.Empty;
 
             Console.WriteLine($"[MainViewModel] 検索完了: {SearchResults.Count}件");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[MainViewModel] 検索エラー: {ex.Message}");
+            // Clear existing search results and unsubscribe from events
+            foreach (var result in SearchResults)
+            {
+                result.SelectionChanged -= OnSearchResultSelectionChanged;
+            }
             SearchResults.Clear();
             HasSearchResults = false;
             SearchResultsText = "検索中にエラーが発生しました。";
+            SelectedSearchResultsText = string.Empty;
         }
         finally
         {
@@ -459,10 +488,83 @@ public partial class MainViewModel : ObservableObject
         SearchArtistName = string.Empty;
         SearchAlbumName = string.Empty;
         SelectedMood = string.Empty;
+        // Clear existing search results and unsubscribe from events
+        foreach (var result in SearchResults)
+        {
+            result.SelectionChanged -= OnSearchResultSelectionChanged;
+        }
         SearchResults.Clear();
         HasSearchResults = false;
         SearchResultsText = string.Empty;
+        SelectedSearchResultsText = string.Empty;
         
         Console.WriteLine("[MainViewModel] 検索条件クリア");
+    }
+
+    // Search result selection methods
+    
+    private void SelectAllSearchResults()
+    {
+        foreach (var result in SearchResults)
+        {
+            result.IsSelected = true;
+        }
+        UpdateSelectedSearchResultsText();
+        Console.WriteLine("[MainViewModel] 検索結果を全選択");
+    }
+    
+    private void ClearAllSearchResults()
+    {
+        foreach (var result in SearchResults)
+        {
+            result.IsSelected = false;
+        }
+        UpdateSelectedSearchResultsText();
+        Console.WriteLine("[MainViewModel] 検索結果の選択を全解除");
+    }
+    
+    private void UpdateSelectedSearchResultsText()
+    {
+        var selectedCount = SearchResults.Count(r => r.IsSelected);
+        SelectedSearchResultsText = selectedCount > 0 ? $"({selectedCount}件選択)" : string.Empty;
+    }
+
+    private void OnSearchResultSelectionChanged(object? sender, EventArgs e)
+    {
+        UpdateSelectedSearchResultsText();
+    }
+
+    public void OnSearchResultCheckBoxPreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.CheckBox checkBox ||
+            checkBox.DataContext is not SearchResultViewModel currentItem)
+            return;
+
+        var currentIndex = SearchResults.IndexOf(currentItem);
+        if (currentIndex == -1) return;
+
+        // Shift+クリックの場合は範囲選択
+        if (System.Windows.Input.Keyboard.Modifiers.HasFlag(System.Windows.Input.ModifierKeys.Shift) && 
+            _lastSelectedSearchIndex >= 0 && _lastSelectedSearchIndex < SearchResults.Count)
+        {
+            var startIndex = Math.Min(_lastSelectedSearchIndex, currentIndex);
+            var endIndex = Math.Max(_lastSelectedSearchIndex, currentIndex);
+            
+            // 範囲内のアイテムを選択状態にする
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                SearchResults[i].IsSelected = true;
+            }
+            
+            UpdateSelectedSearchResultsText();
+            
+            // マウスイベントをキャンセルして、デフォルトのチェックボックス動作を防ぐ
+            e.Handled = true;
+        }
+        else
+        {
+            // 通常のクリックの場合は最後の選択インデックスを更新
+            _lastSelectedSearchIndex = currentIndex;
+        }
     }
 }

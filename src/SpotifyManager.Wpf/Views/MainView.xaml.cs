@@ -46,4 +46,13 @@ public partial class MainView : UserControl
             playlist.ToggleCheckCommand.Execute(null);
         }
     }
+
+    private void OnSearchResultCheckBoxPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel)
+        {
+            viewModel.OnSearchResultCheckBoxPreviewMouseLeftButtonDown(sender, e);
+        }
+    }
+
 }
