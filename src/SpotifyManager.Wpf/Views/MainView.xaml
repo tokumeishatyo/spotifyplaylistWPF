@@ -108,6 +108,13 @@
                                               FontSize="12"/>
                                 </Button>
                                 
+                                <!-- Playlist Checkbox -->
+                                <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                         IsThreeState="True"
+                                         Margin="0,0,10,0"
+                                         VerticalAlignment="Center"
+                                         PreviewMouseLeftButtonDown="OnPlaylistCheckBoxPreviewMouseLeftButtonDown"/>
+                                
                                 <!-- Playlist Image -->
                                 <Border Width="40" Height="40" 
                                        CornerRadius="4" 
@@ -173,7 +180,8 @@
                                     <StackPanel Orientation="Horizontal" Margin="20,2,5,2">
                                         <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                                  Margin="0,0,10,0"
-                                                 VerticalAlignment="Center"/>
+                                                 VerticalAlignment="Center"
+                                                 PreviewMouseLeftButtonDown="OnTrackCheckBoxPreviewMouseLeftButtonDown"/>
                                         
                                         <!-- Track Album Image -->
                                         <Border Width="20" Height="20" 
@@ -246,7 +254,7 @@
         <!-- Footer -->
         <Border Grid.Row="2" Background="#E0E0E0" Padding="10">
             <Button Content="Delete"
-                    IsEnabled="False"
+                    Command="{Binding DeleteSelectedCommand}"
                     HorizontalAlignment="Center"
                     Padding="20,10"
                     Background="#FF5252"

@@ -2,6 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SpotifyManager.Core.Interfaces;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Windows.Input;
 
 namespace SpotifyManager.Wpf.ViewModels;
@@ -21,11 +23,15 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLoadingPlaylists;
 
+    [ObservableProperty]
+    private bool _hasSelectedItems;
+
     public ObservableCollection<PlaylistViewModel> Playlists { get; } = new();
 
     public ICommand LogoutCommand { get; }
     public ICommand ToggleThemeCommand { get; }
     public ICommand LoadPlaylistsCommand { get; }
+    public ICommand DeleteSelectedCommand { get; }
     
     public event EventHandler? LogoutRequested;
 
@@ -41,6 +47,9 @@ public partial class MainViewModel : ObservableObject
         LogoutCommand = new AsyncRelayCommand(LogoutAsync);
         ToggleThemeCommand = new AsyncRelayCommand(ToggleThemeAsync);
         LoadPlaylistsCommand = new AsyncRelayCommand(LoadPlaylistsAsync);
+        DeleteSelectedCommand = new AsyncRelayCommand(DeleteSelectedItemsAsync, CanDeleteSelectedItems);
+        
+        Playlists.CollectionChanged += OnPlaylistsCollectionChanged;
         
         _ = InitializeAsync();
     }
@@ -105,7 +114,10 @@ public partial class MainViewModel : ObservableObject
             Playlists.Clear();
             foreach (var playlist in playlists)
             {
-                Playlists.Add(new PlaylistViewModel(playlist, _playlistService));
+                var playlistViewModel = new PlaylistViewModel(playlist, _playlistService);
+                playlistViewModel.PropertyChanged += OnPlaylistPropertyChanged;
+                playlistViewModel.SelectionChanged += OnPlaylistSelectionChanged;
+                Playlists.Add(playlistViewModel);
             }
             
             Console.WriteLine($"[MainViewModel] プレイリスト読み込み完了: {Playlists.Count}件");
@@ -118,5 +130,57 @@ public partial class MainViewModel : ObservableObject
         {
             IsLoadingPlaylists = false;
         }
+    }
+
+    private void OnPlaylistsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+        {
+            foreach (PlaylistViewModel playlist in e.NewItems)
+            {
+                playlist.PropertyChanged += OnPlaylistPropertyChanged;
+                playlist.SelectionChanged += OnPlaylistSelectionChanged;
+            }
+        }
+        
+        if (e.OldItems != null)
+        {
+            foreach (PlaylistViewModel playlist in e.OldItems)
+            {
+                playlist.PropertyChanged -= OnPlaylistPropertyChanged;
+                playlist.SelectionChanged -= OnPlaylistSelectionChanged;
+            }
+        }
+    }
+
+    private void OnPlaylistPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PlaylistViewModel.IsChecked))
+        {
+            UpdateHasSelectedItems();
+        }
+    }
+
+    private void OnPlaylistSelectionChanged(object? sender, EventArgs e)
+    {
+        UpdateHasSelectedItems();
+    }
+
+    private void UpdateHasSelectedItems()
+    {
+        HasSelectedItems = Playlists.Any(p => p.IsChecked == true || p.Tracks.Any(t => t.IsSelected));
+        ((AsyncRelayCommand)DeleteSelectedCommand).NotifyCanExecuteChanged();
+    }
+
+    private bool CanDeleteSelectedItems()
+    {
+        return HasSelectedItems;
+    }
+
+    private async Task DeleteSelectedItemsAsync()
+    {
+        // TODO: 実装は次のPBIで行う
+        Console.WriteLine("[MainViewModel] 削除処理（未実装）");
+        await Task.CompletedTask;
     }
 }
