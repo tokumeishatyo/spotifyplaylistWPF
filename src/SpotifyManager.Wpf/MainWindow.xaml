@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:SpotifyManager.Wpf"
         mc:Ignorable="d"
         Title="Spotify Playlist Manager" Height="900" Width="900"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Icon="icon.jpg">
     <Grid Background="{DynamicResource PrimaryBackgroundBrush}">
         <ContentControl x:Name="MainContent" />
     </Grid>

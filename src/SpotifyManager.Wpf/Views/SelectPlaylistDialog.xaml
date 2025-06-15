@@ -6,7 +6,8 @@
         Width="500"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PrimaryBackgroundBrush}"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        Icon="pack://application:,,,/icon.jpg">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
