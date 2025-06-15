@@ -4,6 +4,7 @@ using SpotifyManager.Auth;
 using SpotifyManager.Core.Interfaces;
 using SpotifyManager.Playlist;
 using SpotifyManager.Theme;
+using SpotifyManager.Search;
 using SpotifyManager.Wpf.ViewModels;
 using SpotifyManager.Wpf.Views;
 using System.Windows;
@@ -23,6 +24,7 @@ public partial class App : Application
                 services.AddAuthServices();
                 services.AddPlaylistServices();
                 services.AddThemeServices();
+                services.AddSearchServices();
 
                 // Register ViewModels
                 services.AddTransient<LoginViewModel>();

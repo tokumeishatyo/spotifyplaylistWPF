@@ -29,6 +29,7 @@
     <ProjectReference Include="..\SpotifyManager.Auth\SpotifyManager.Auth.csproj" />
     <ProjectReference Include="..\SpotifyManager.Playlist\SpotifyManager.Playlist.csproj" />
     <ProjectReference Include="..\SpotifyManager.Theme\SpotifyManager.Theme.csproj" />
+    <ProjectReference Include="..\SpotifyManager.Search\SpotifyManager.Search.csproj" />
   </ItemGroup>
 
 </Project>

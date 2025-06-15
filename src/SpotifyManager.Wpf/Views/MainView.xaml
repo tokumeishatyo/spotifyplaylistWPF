@@ -10,6 +10,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -56,8 +57,182 @@
             </Grid>
         </Border>
         
+        <!-- Search Panel -->
+        <Expander Grid.Row="1" 
+                  Header="楽曲を検索する"
+                  IsExpanded="{Binding IsSearchPanelExpanded, Mode=TwoWay}"
+                  Background="{DynamicResource PrimaryBackgroundBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="0,0,0,1"
+                  Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Search Mode Selector -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,5">
+                    <RadioButton Content="キーワード検索" 
+                                IsChecked="{Binding IsKeywordSearchMode, Mode=TwoWay}"
+                                Margin="0,0,20,0"/>
+                    <RadioButton Content="おまかせ検索" 
+                                IsChecked="{Binding IsOmakaseSearchMode, Mode=TwoWay}"/>
+                </StackPanel>
+                
+                <!-- Keyword Search Panel -->
+                <Grid Grid.Row="1" 
+                      Visibility="{Binding IsKeywordSearchMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Margin="0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0" Text="曲名:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding SearchTrackName, UpdateSourceTrigger=PropertyChanged}"/>
+                    
+                    <TextBlock Grid.Column="3" Text="アーティスト名:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBox Grid.Column="4" Text="{Binding SearchArtistName, UpdateSourceTrigger=PropertyChanged}"/>
+                    
+                    <TextBlock Grid.Column="6" Text="アルバム名:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBox Grid.Column="7" Text="{Binding SearchAlbumName, UpdateSourceTrigger=PropertyChanged}"/>
+                </Grid>
+                
+                <!-- Omakase Search Panel -->
+                <Grid Grid.Row="1" 
+                      Visibility="{Binding IsOmakaseSearchMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Margin="0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0" Text="今日の気分:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <ComboBox Grid.Column="1" 
+                             ItemsSource="{Binding AvailableMoods}"
+                             SelectedItem="{Binding SelectedMood, Mode=TwoWay}"/>
+                </Grid>
+                
+                <!-- Search Controls -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10">
+                    <TextBlock Text="表示件数:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <ComboBox SelectedItem="{Binding MaxResults, Mode=TwoWay}" Margin="0,0,20,0">
+                        <ComboBoxItem Content="20"/>
+                        <ComboBoxItem Content="50"/>
+                    </ComboBox>
+                    
+                    <Button Content="{Binding SearchButtonText}" 
+                           Command="{Binding SearchCommand}"
+                           Padding="20,5" 
+                           Margin="0,0,10,0"
+                           Background="{DynamicResource ButtonBackgroundBrush}"
+                           Foreground="{DynamicResource ButtonTextBrush}"/>
+                    
+                    <Button Content="クリア" 
+                           Command="{Binding ClearSearchCommand}"
+                           Padding="15,5"
+                           Background="{DynamicResource ButtonBackgroundBrush}"
+                           Foreground="{DynamicResource ButtonTextBrush}"/>
+                </StackPanel>
+                
+                <!-- Search Results -->
+                <Grid Grid.Row="3" 
+                      Visibility="{Binding HasSearchResults, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Margin="0,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" 
+                              Text="{Binding SearchResultsText}" 
+                              FontWeight="Bold" 
+                              Margin="0,0,0,5"
+                              Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ListView ItemsSource="{Binding SearchResults}" 
+                                 Background="{DynamicResource PrimaryBackgroundBrush}"
+                                 BorderThickness="1"
+                                 BorderBrush="{DynamicResource BorderBrush}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="5">
+                                        <Border Width="30" Height="30" 
+                                               CornerRadius="2" 
+                                               Margin="0,0,10,0"
+                                               Background="{DynamicResource TrackImageBackgroundBrush}">
+                                            <Grid>
+                                                <Image Source="{Binding TrackInfo.AlbumImageUrl}"
+                                                      Stretch="UniformToFill"
+                                                      RenderOptions.BitmapScalingMode="HighQuality">
+                                                    <Image.Style>
+                                                        <Style TargetType="Image">
+                                                            <Style.Triggers>
+                                                                <Trigger Property="Source" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Image.Style>
+                                                </Image>
+                                                <TextBlock Text="♪" 
+                                                          FontSize="12"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          Foreground="{DynamicResource TrackIconBrush}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding TrackInfo.AlbumImageUrl}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding TrackInfo.AlbumImageUrl}" Value="">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Border>
+                                        
+                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding TrackInfo.Name}" 
+                                                      FontWeight="SemiBold"
+                                                      FontSize="12"
+                                                      Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                            <TextBlock Text="{Binding ArtistsText}"
+                                                      FontSize="10"
+                                                      Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                            <TextBlock Text="{Binding PlaylistName, StringFormat='({0})'}"
+                                                      FontSize="10"
+                                                      FontStyle="Italic"
+                                                      Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </Expander>
+        
         <!-- Content Area -->
-        <Grid Grid.Row="1" Background="{DynamicResource SecondaryBackgroundBrush}">
+        <Grid Grid.Row="2" Background="{DynamicResource SecondaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -258,7 +433,7 @@
         </Grid>
         
         <!-- Footer -->
-        <Border Grid.Row="2" Background="{DynamicResource FooterBackgroundBrush}" Padding="10">
+        <Border Grid.Row="3" Background="{DynamicResource FooterBackgroundBrush}" Padding="10">
             <Button Content="Delete"
                     Command="{Binding DeleteSelectedCommand}"
                     HorizontalAlignment="Center"
