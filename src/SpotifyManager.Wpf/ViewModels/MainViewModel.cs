@@ -27,6 +27,12 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasSelectedItems;
 
+    [ObservableProperty]
+    private bool _hasSelectedSearchResults;
+
+    [ObservableProperty]
+    private bool _hasSelectedPlaylistItems;
+
     // Search related properties
     [ObservableProperty]
     private bool _isSearchPanelExpanded = true;
@@ -76,6 +82,8 @@ public partial class MainViewModel : ObservableObject
     public ICommand ClearSearchCommand { get; }
     public ICommand SelectAllSearchResultsCommand { get; }
     public ICommand ClearAllSearchResultsCommand { get; }
+    public ICommand AddToNewPlaylistCommand { get; }
+    public ICommand AddToExistingPlaylistCommand { get; }
 
     private int _lastSelectedSearchIndex = -1;
     
@@ -100,6 +108,8 @@ public partial class MainViewModel : ObservableObject
         ClearSearchCommand = new RelayCommand(ClearSearch);
         SelectAllSearchResultsCommand = new RelayCommand(SelectAllSearchResults);
         ClearAllSearchResultsCommand = new RelayCommand(ClearAllSearchResults);
+        AddToNewPlaylistCommand = new RelayCommand(AddToNewPlaylist, CanAddToPlaylist);
+        AddToExistingPlaylistCommand = new RelayCommand(AddToExistingPlaylist, CanAddToPlaylist);
         
         Playlists.CollectionChanged += OnPlaylistsCollectionChanged;
         
@@ -274,13 +284,24 @@ public partial class MainViewModel : ObservableObject
 
     private void UpdateHasSelectedItems()
     {
-        HasSelectedItems = Playlists.Any(p => p.IsChecked == true || p.Tracks.Any(t => t.IsSelected));
+        // プレイリストアイテムの選択状態
+        HasSelectedPlaylistItems = Playlists.Any(p => p.IsChecked == true || p.Tracks.Any(t => t.IsSelected));
+        
+        // 検索結果の選択状態
+        HasSelectedSearchResults = SearchResults.Any(r => r.IsSelected);
+        
+        // 全体の選択状態
+        HasSelectedItems = HasSelectedPlaylistItems || HasSelectedSearchResults;
+        
         ((AsyncRelayCommand)DeleteSelectedCommand).NotifyCanExecuteChanged();
+        ((RelayCommand)AddToNewPlaylistCommand).NotifyCanExecuteChanged();
+        ((RelayCommand)AddToExistingPlaylistCommand).NotifyCanExecuteChanged();
     }
 
     private bool CanDeleteSelectedItems()
     {
-        return HasSelectedItems;
+        // 検索結果のみが選択されている場合はDeleteボタンを無効にする
+        return HasSelectedPlaylistItems;
     }
 
     private async Task DeleteSelectedItemsAsync()
@@ -532,6 +553,7 @@ public partial class MainViewModel : ObservableObject
     private void OnSearchResultSelectionChanged(object? sender, EventArgs e)
     {
         UpdateSelectedSearchResultsText();
+        UpdateHasSelectedItems();
     }
 
     public void OnSearchResultCheckBoxPreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -565,6 +587,88 @@ public partial class MainViewModel : ObservableObject
         {
             // 通常のクリックの場合は最後の選択インデックスを更新
             _lastSelectedSearchIndex = currentIndex;
+        }
+    }
+
+    // Playlist addition methods
+    
+    private bool CanAddToPlaylist()
+    {
+        return HasSelectedItems;
+    }
+
+    private void AddToNewPlaylist()
+    {
+        try
+        {
+            var selectedTracks = new List<SpotifyManager.Core.Models.TrackInfo>();
+            
+            // 検索結果から選択された楽曲を追加
+            selectedTracks.AddRange(SearchResults.Where(r => r.IsSelected).Select(r => r.TrackInfo));
+            
+            // プレイリストから選択された楽曲を追加
+            foreach (var playlist in Playlists)
+            {
+                selectedTracks.AddRange(playlist.Tracks.Where(t => t.IsSelected).Select(t => t.TrackInfo));
+            }
+            
+            Console.WriteLine($"[MainViewModel] 新規プレイリストに{selectedTracks.Count}件の楽曲を追加（未実装）");
+            
+            // TODO: 新規プレイリスト作成ダイアログを表示
+            // TODO: プレイリスト作成と楽曲追加を実行
+            
+            System.Windows.MessageBox.Show(
+                $"{selectedTracks.Count}件の楽曲を新規プレイリストに追加する機能は次回実装予定です。",
+                "機能準備中",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainViewModel] 新規プレイリスト追加エラー: {ex.Message}");
+            System.Windows.MessageBox.Show(
+                $"新規プレイリスト追加中にエラーが発生しました: {ex.Message}",
+                "エラー",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+        }
+        
+    }
+
+    private void AddToExistingPlaylist()
+    {
+        try
+        {
+            var selectedTracks = new List<SpotifyManager.Core.Models.TrackInfo>();
+            
+            // 検索結果から選択された楽曲を追加
+            selectedTracks.AddRange(SearchResults.Where(r => r.IsSelected).Select(r => r.TrackInfo));
+            
+            // プレイリストから選択された楽曲を追加
+            foreach (var playlist in Playlists)
+            {
+                selectedTracks.AddRange(playlist.Tracks.Where(t => t.IsSelected).Select(t => t.TrackInfo));
+            }
+            
+            Console.WriteLine($"[MainViewModel] 既存プレイリストに{selectedTracks.Count}件の楽曲を追加（未実装）");
+            
+            // TODO: プレイリスト選択ダイアログを表示
+            // TODO: 選択されたプレイリストに楽曲追加を実行
+            
+            System.Windows.MessageBox.Show(
+                $"{selectedTracks.Count}件の楽曲を既存プレイリストに追加する機能は次回実装予定です。",
+                "機能準備中",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MainViewModel] 既存プレイリスト追加エラー: {ex.Message}");
+            System.Windows.MessageBox.Show(
+                $"既存プレイリスト追加中にエラーが発生しました: {ex.Message}",
+                "エラー",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
         }
     }
 }

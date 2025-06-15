@@ -510,16 +510,42 @@
         
         <!-- Footer -->
         <Border Grid.Row="3" Background="{DynamicResource FooterBackgroundBrush}" Padding="10">
-            <Button Content="Delete"
-                    Command="{Binding DeleteSelectedCommand}"
-                    HorizontalAlignment="Center"
-                    Padding="20,10"
-                    Background="{DynamicResource DeleteButtonBrush}"
-                    Foreground="{DynamicResource HeaderTextBrush}"
-                    BorderThickness="0"
-                    FontSize="16"
-                    Cursor="Hand"
-                    Visibility="{Binding HasSelectedItems, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <!-- Delete Button (hidden when search results are selected) -->
+                <Button Content="Delete"
+                        Command="{Binding DeleteSelectedCommand}"
+                        Padding="15,10"
+                        Margin="0,0,10,0"
+                        Background="{DynamicResource DeleteButtonBrush}"
+                        Foreground="{DynamicResource HeaderTextBrush}"
+                        BorderThickness="0"
+                        FontSize="14"
+                        Cursor="Hand"
+                        Visibility="{Binding HasSelectedSearchResults, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                
+                <!-- New Playlist Button (shown when any items are selected) -->
+                <Button Content="新規プレイリストに追加"
+                        Command="{Binding AddToNewPlaylistCommand}"
+                        Padding="15,10"
+                        Margin="0,0,10,0"
+                        Background="{DynamicResource ButtonBackgroundBrush}"
+                        Foreground="{DynamicResource ButtonTextBrush}"
+                        BorderThickness="0"
+                        FontSize="14"
+                        Cursor="Hand"
+                        Visibility="{Binding HasSelectedItems, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                
+                <!-- Existing Playlist Button (shown when any items are selected) -->
+                <Button Content="既存のプレイリストに追加"
+                        Command="{Binding AddToExistingPlaylistCommand}"
+                        Padding="15,10"
+                        Background="{DynamicResource ButtonBackgroundBrush}"
+                        Foreground="{DynamicResource ButtonTextBrush}"
+                        BorderThickness="0"
+                        FontSize="14"
+                        Cursor="Hand"
+                        Visibility="{Binding HasSelectedItems, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            </StackPanel>
         </Border>
     </Grid>
 </UserControl>
