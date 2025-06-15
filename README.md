@@ -66,12 +66,20 @@ SpotifyManager.exe (Wpf)
 
 ### 🚀 実行方法
 
-**推奨方法（最新の実行ファイル）:**
+**エンドユーザー向け（リリース版）:**
 1. 実行ファイルの場所：
    ```
-   publish/SpotifyManager.exe
+   release/SpotifyManager.exe
    ```
-2. ダブルクリックで起動
+2. ダブルクリックで起動（単一実行ファイル、158MB）
+3. .NET ランタイムのインストール不要（自己完結型）
+
+**開発者向け（デバッグ版）:**
+1. 実行ファイルの場所：
+   ```
+   debug/SpotifyManager.exe
+   ```
+2. コンソールウィンドウ付きでデバッグ情報表示
 
 **開発環境での実行:**
 ```bash
@@ -129,6 +137,18 @@ dotnet run --project src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj
 - テーマ切り替え機能実装済み
 - Client ID はBase64エンコードによる軽微な難読化を実装済み
 
+### 📦 リリース情報
+
+**v1.0.0-beta (PBI-01〜06完了版)**
+- **ファイル:** `release/SpotifyManager.exe`
+- **サイズ:** 158MB（単一実行ファイル）
+- **要件:** Windows 10/11 64-bit
+- **特徴:**
+  - .NET ランタイム不要（自己完結型）
+  - コンソールウィンドウなし（エンドユーザー向け）
+  - レジストリ使用なし（ポータブル）
+  - 自己解凍実行ファイル
+
 ### 🔧 開発コマンド
 
 ```bash
@@ -138,8 +158,11 @@ dotnet build
 # 実行（開発環境）
 dotnet run --project src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj
 
-# 配布用実行ファイル作成
-dotnet publish src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj -c Release -o publish --self-contained true -r win-x64
+# デバッグ版作成（コンソール付き）
+dotnet publish src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj -c Debug -r win-x64 --self-contained -o debug
+
+# リリース版作成（単一実行ファイル）
+dotnet publish src/SpotifyManager.Wpf/SpotifyManager.Wpf.csproj -c Release -r win-x64 --self-contained -o release -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 ```
 
 ### 🛠️ 技術スタック

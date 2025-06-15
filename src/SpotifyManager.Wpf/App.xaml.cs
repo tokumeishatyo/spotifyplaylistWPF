@@ -38,15 +38,6 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-        // デバッグ用にコンソールウィンドウを表示
-        #if DEBUG
-        AllocConsole();
-        Console.WriteLine("=== Spotify Manager デバッグコンソール ===");
-        Console.WriteLine("認証処理のデバッグ情報がここに表示されます");  
-        Console.WriteLine("現在時刻: " + DateTime.Now);
-        Console.WriteLine("コンソールウィンドウが正常に表示されています");
-        #endif
-
         await _host.StartAsync();
 
         // 初期テーマを適用
@@ -59,8 +50,6 @@ public partial class App : Application
         base.OnStartup(e);
     }
 
-    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-    private static extern bool AllocConsole();
 
     protected override async void OnExit(ExitEventArgs e)
     {
